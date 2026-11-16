@@ -513,6 +513,17 @@ function loadLocal(){
   try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{}}}
   catch(e){storageOK=false}
 }
+/* 修正：之前购买按钮没防连点，可能同一款扣了两次金币。发现重复就去重并退款。 */
+function repairDup(){
+  const o=Array.isArray(PRO.owned)?PRO.owned:[];const cnt={};o.forEach(id=>cnt[id]=(cnt[id]||0)+1);
+  const dups=Object.entries(cnt).filter(([,n])=>n>1); if(!dups.length) return 0;
+  const uniq=[...new Set(o)], paid=uniq.filter(id=>{const L=LOOKS.find(x=>x.id===id);return L&&L.price>0});
+  let refund=0;
+  if(paid.length===1&&dups.length===1){const n=dups[0][1];refund=Math.round((Number(PRO.spent)||0)*(n-1)/n)}
+  else for(const [id,n] of dups){const L=LOOKS.find(x=>x.id===id);refund+=(n-1)*(L?L.price||0:0)}
+  PRO=Object.assign({},PRO,{owned:uniq,spent:Math.max(0,(Number(PRO.spent)||0)-refund)});
+  return refund;
+}
 function saveLocal(){
   try{localStorage.setItem(KEY,JSON.stringify({v:1,log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR,savedAt:Date.now()}));setSave("已保存在本机 ✓")}
   catch(e){storageOK=false;setSave("这台设备存不了数据，请导出备份");toast("这次没存上，请先导出备份")}
@@ -875,7 +886,7 @@ document.getElementById("restoreFile").addEventListener("change",ev=>{
     if(!d||d.schema!=="quest-island-backup/v1"){toast("这不是冒险岛备份文件");return}
     const n=Object.keys(LOG).length;
     if(n&&!confirmRestore(n))return;
-    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{};ensureP1();saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
+    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{};repairDup();ensureP1();saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
   });
 });
 function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 天的打卡，导入备份会整体替换它们。确定吗？`)}
@@ -908,6 +919,7 @@ document.querySelector(".tabbar").addEventListener("click",ev=>{const b=ev.targe
 (()=>{let t="today";try{t=localStorage.getItem(TABKEY)||"today"}catch(e){}if(!document.querySelector(`[data-tab="${t}"]`))t="today";showTab(t)})();
 (async()=>{
   loadLocal();
+  const refunded=repairDup(); if(refunded){saveLocal();setTimeout(()=>toast(`发现重复购买，已退还 ${refunded} 金币`),1500)}
   if(!storageOK) toast("这个浏览器不让存数据（可能是无痕模式），打卡会丢");
   loading("读取计划中…");
   await fetchPlan();
