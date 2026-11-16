@@ -823,7 +823,7 @@ document.addEventListener("click",ev=>{
   if(b.dataset.mv){const id=b.dataset.mv,x=EX[id];if(!x||VE[id]||x.week>=12)return;const to=x.week+1;
     mutate(()=>{EX[id]={week:to,at:x.at||Date.now(),movedFrom:x.week}},`${id} 已顺延到第 ${to} 周`);return}
   if(b.dataset.real){const r=b.dataset.real;mutate(()=>{const o=S.real[r]||(S.real[r]={});o.done=true;syncPro()},"已记为兑现，好好享受！");return}
-  if(b.dataset.buy){const it=LOOKS.find(i=>i.id===b.dataset.buy);if(compute().coins<it.price)return;
+  if(b.dataset.buy){const it=LOOKS.find(i=>i.id===b.dataset.buy);if(!it||S.owned.includes(it.id)||compute().coins<it.price)return;
     mutate(()=>{S.spent+=it.price;S.owned.push(it.id);S.look=it.id;syncPro()},`解锁新造型「${it.name}」`);return}
   if(b.dataset.eq){const it=LOOKS.find(i=>i.id===b.dataset.eq);mutate(()=>{S.look=it.id;syncPro()},`换上「${it.name}」`);return}
 });
