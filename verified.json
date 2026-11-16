@@ -1,10 +1,10 @@
 {
- "updatedAt": "2026-11-16T10:06:00+08:00",
+ "updatedAt": "2026-11-16T13:40:00+08:00",
  "note": "由 Claude 维护：只记任务编号和验收结论，不含个人数据",
  "items": {
   "d_2026-11-09": {
    "status": "pass",
-   "reply": "建项目 + 生成频道规划 Excel 并存到 D 盘",
+   "reply": "建项目 + 生成频道规划 Excel",
    "at": 1794700000000
   },
   "d_2026-11-10": {
@@ -19,12 +19,12 @@
   },
   "d_2026-11-12": {
    "status": "pass",
-   "reply": "建云端仓库 xiaoxuanzi-channel，clone 到 D:\\GitHub，命令行 add → commit（docs: 添加自我介绍）→ push 成功，git log 2 条提交",
+   "reply": "建云端仓库 xiaoxuanzi-channel，clone 到本地，命令行 add → commit（docs: 添加自我介绍）→ push 成功，git log 2 条提交",
    "at": 1794700000000
   },
   "d_2026-11-13": {
    "status": "pass",
-   "reply": "GitHub Desktop 初体验：D:\\git-test 用 Desktop 提交两次（fc3a490 Create a.txt、acf877a second），History 截图与 .git 日志一致",
+   "reply": "GitHub Desktop 初体验：在练习仓库里用 Desktop 提交两次，History 截图与 Git 记录一致",
    "at": 1794700000000
   },
   "d_2026-11-14": {
@@ -39,7 +39,7 @@
   },
   "w1_quest": {
    "status": "pass",
-   "reply": "11月9日验收：项目「小玄子的视频频道」已建，D:\\小玄子\\小玄子频道规划.xlsx 已生成（5 个工作表）",
+   "reply": "11月9日验收：项目「小玄子的视频频道」已建，频道规划 Excel 已生成（5 个工作表）",
    "at": 1794700000000
   },
   "w1_git": {
@@ -74,7 +74,7 @@
   },
   "x_E31": {
    "status": "pass",
-   "reply": "11月12日验收：私有仓库 ai-12week-lab 建好（Private），导入 8 个文件；用 GitHub Desktop 走完两次「分支 → 提交 → 发布 → PR → 合并 → 拉取」（PR #1 两方化、计划 v5）；Codex 完成第一次只读审查；ChatGPT 从 main 分支答对第一原则、第 3–4 周作品和 3 条未确认事项",
+   "reply": "11月12日验收：私有仓库建好，导入 8 个文件；用 GitHub Desktop 走完两次「分支 → 提交 → 发布 → PR → 合并 → 拉取」；Codex 完成第一次只读审查；ChatGPT 能读到仓库内容并答对计划要点",
    "at": 1794700000000
   }
  }
