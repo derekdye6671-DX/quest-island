@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>冒险岛</title>
+<meta name="description" content="十二周冒险岛：每日打卡、Claude 验收、金币和等级">
+<meta name="theme-color" content="#EDF3F0">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="冒险岛">
+<style>body{margin:0}[hidden]{display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout: 左侧角色卡 + 右侧今日任务，下方周任务 / 商店 / 12周地图，窄屏单列 */
+:root{
+  --bg:#EDF3F0; --panel:#FFFFFF; --ink:#1E2A33; --muted:#5E6E78; --line:#D3DFDA;
+  --gold:#D99A12; --gold-soft:#FBEFD2; --xp:#6550D8; --xp-soft:#E8E4FB;
+  --ok:#23946A; --ok-soft:#DDF1E8; --warn:#C2562F;
+  --sky1:#BFE3F2; --sky2:#E9F6EE; --ground:#9CCB8A;
+  --f-display:"ZCOOL KuaiLe","PingFang SC","Microsoft YaHei",sans-serif;
+  --f-body:"PingFang SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --f-num:"Silkscreen",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121A20; --panel:#1B252D; --ink:#E6EEF2; --muted:#93A3AD; --line:#2C3A44;
+  --gold:#F0B83A; --gold-soft:#3A3018; --xp:#9C8CFF; --xp-soft:#2A2550;
+  --ok:#4CC596; --ok-soft:#173A2D; --warn:#F08A62;
+  --sky1:#1D3550; --sky2:#26344A; --ground:#2F5A3A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121A20; --panel:#1B252D; --ink:#E6EEF2; --muted:#93A3AD; --line:#2C3A44;
+  --gold:#F0B83A; --gold-soft:#3A3018; --xp:#9C8CFF; --xp-soft:#2A2550;
+  --ok:#4CC596; --ok-soft:#173A2D; --warn:#F08A62;
+  --sky1:#1D3550; --sky2:#26344A; --ground:#2F5A3A; color-scheme:dark}
+html,body{background:var(--bg);color:var(--ink)}
+body{font-family:var(--f-body);line-height:1.55;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:20px}
+h1,h2,h3{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance}
+h1{font-size:30px;letter-spacing:.02em}
+h2{font-size:21px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.sub{color:var(--muted);font-size:13px}
+.wallet{display:flex;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;font-size:14px;font-weight:600}
+.chip.gold{background:var(--gold-soft);color:var(--gold)}
+.chip.xp{background:var(--xp-soft);color:var(--xp)}
+.chip.exp{border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;font:inherit;font-size:14px;font-weight:600}
+.ov-box.imp{max-width:440px;text-align:left}
+.ov-box.imp .t{padding:0 16px}
+#impBody{padding:6px 16px 0;font-size:13px;max-height:60vh;overflow:auto}
+#impBody table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;margin:6px 0}
+#impBody th,#impBody td{border-bottom:1px solid var(--line);padding:4px 6px;text-align:left}
+#impBody .err{color:var(--warn);font-weight:600}
+#impBody ul{padding-left:18px;margin:6px 0}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.grid2{display:grid;grid-template-columns:minmax(0,360px) minmax(0,1fr);gap:20px}
+@media (max-width:820px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;min-width:0}
+.panel>h2{margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.panel>h2 small{font-family:var(--f-body);font-size:12px;color:var(--muted)}
+/* hero */
+.stage{border-radius:10px;overflow:hidden;border:1px solid var(--line)}
+.stage{aspect-ratio:3/4;background:var(--bg)}
+@media (max-width:820px){
+  .herop{display:grid;grid-template-columns:40% minmax(0,1fr);column-gap:14px;align-content:start}
+  .herop .stage{grid-row:1 / span 6;align-self:start}
+  .herop>*:not(.stage){grid-column:2}
+  .herop .hero-name,.herop .lvl{margin-top:0}
+  .herop .stats{margin-top:6px;gap:5px}
+  .stat{grid-template-columns:34px 1fr 40px;font-size:12px}
+  h1{font-size:24px}
+  .panel{padding:14px}
+}
+.stage img.hero{display:block;width:100%;height:100%;object-fit:cover;animation:fadein .5s}
+@keyframes fadein{from{opacity:0}}
+.lvl{display:flex;justify-content:space-between;align-items:baseline;margin-top:12px}
+.lvl .title{font-family:var(--f-display);font-size:20px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--xp);border-radius:6px;transition:width .5s}
+.stats{display:grid;gap:8px;margin-top:14px}
+.stat{display:grid;grid-template-columns:52px 1fr 54px;align-items:center;gap:8px;font-size:13px}
+.stat .bar{height:8px}
+.stat .v{text-align:right;color:var(--muted);font-size:11px}
+/* day */
+.daynav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.daynav button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:4px 10px;cursor:pointer}
+.daynav button:disabled{opacity:.35;cursor:default}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px dashed var(--line)}
+.task:first-of-type{border-top:0}
+.ico{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:19px;background:var(--bg)}
+.task .name{font-weight:600}
+.task .meta{font-size:12px;color:var(--muted)}
+.tag{font-size:11px;padding:1px 7px;border-radius:5px;margin-left:6px;vertical-align:1px;font-weight:500}
+.tag.v{background:var(--gold-soft);color:var(--gold)}
+.vbtn{font:inherit;font-size:13px;font-weight:600;border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:10px;padding:8px 10px;cursor:pointer;white-space:nowrap}
+.vbtn.pend{background:var(--gold-soft);border-color:var(--gold);color:var(--gold)}
+.vok{font-size:13px;font-weight:600;color:var(--ok);white-space:nowrap}
+.tag.t{background:var(--xp-soft);color:var(--xp)} .tag.c{background:var(--ok-soft);color:var(--ok)}
+.check{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:transparent;cursor:pointer;font-size:20px;color:var(--ok);display:grid;place-items:center}
+.check.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.timer{display:flex;align-items:center;gap:6px}
+.timer input{width:56px;font:inherit;font-family:var(--f-num);text-align:center;padding:6px;border:2px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink)}
+.timer input.wide{width:84px}
+.timer input.met{border-color:var(--ok);background:var(--ok-soft)}
+.timer span{font-size:12px;color:var(--muted)}
+.combo{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--gold-soft);color:var(--gold);font-size:13px;font-weight:600}
+.combo.off{background:var(--bg);color:var(--muted);font-weight:400}
+button:focus-visible,input:focus-visible{outline:3px solid var(--xp);outline-offset:2px}
+/* weekly */
+.wk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:620px){.wk{grid-template-columns:minmax(0,1fr)}}
+.wcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:8px;align-content:start}
+.wcard .q{font-size:13px;color:var(--muted)}
+.wcard button{font:inherit;font-weight:600;border:0;border-radius:9px;padding:8px;cursor:pointer;background:var(--bg);color:var(--ink)}
+.wcard button.on{background:var(--ok);color:#fff}
+.wcard button.pend{background:var(--gold-soft);color:var(--gold)}
+.wcard .vnote{font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:6px 8px}
+/* shop */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tabs button{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:5px 12px;border-radius:999px;cursor:pointer}
+.tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.item{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:6px;text-align:center}
+.item .ph{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:3/4;background:var(--bg)}
+.item .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.item.locked .ph img{filter:grayscale(1) brightness(.3) blur(6px);transform:scale(1.1)}
+.item .lk{position:absolute;inset:auto 0 10px;color:#fff;font-size:13px;font-weight:600}
+.item .d{font-size:11px;color:var(--muted)}
+.item .n{font-weight:600;font-size:14px}
+.item button{font:inherit;font-size:13px;font-weight:600;border:0;border-radius:8px;padding:7px;cursor:pointer;background:var(--gold);color:#fff}
+.item button.eq{background:var(--xp)} .item button.worn{background:var(--ok-soft);color:var(--ok)}
+.item button:disabled{background:var(--line);color:var(--muted);cursor:default}
+.item .lock{font-size:11px;color:var(--muted)}
+/* map */
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.week{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:6px;font-size:13px;align-content:start}
+.week.now{border:2px solid var(--xp);box-shadow:0 0 0 4px var(--xp-soft)}
+.week.done{opacity:.72}
+.week h3{font-size:16px;display:flex;justify-content:space-between;gap:6px}
+.week h3 .num{font-size:12px;color:var(--muted)}
+.week .row{display:grid;grid-template-columns:22px 1fr;gap:4px}
+.week .boss{color:var(--warn);font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-weight:600;opacity:0;transition:.25s;pointer-events:none;z-index:20;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.note{font-size:12px;color:var(--muted)}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;font-size:13px}
+.rules div{background:var(--bg);border-radius:10px;padding:10px 12px}
+.rules b{display:block;margin-bottom:2px}
+.hero-name{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-size:13px;color:var(--muted)}
+.hero-name b{font-family:var(--f-display);font-weight:400;font-size:17px;color:var(--ink)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.card{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg);display:grid}
+.card img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.card .cap{padding:8px 10px;font-size:12px;display:grid;gap:2px}
+.card .cap b{font-size:13px}
+.card.locked img{filter:grayscale(1) brightness(.25) blur(6px)}
+.card.locked .cap{color:var(--muted)}
+.card.new{box-shadow:0 0 0 3px var(--gold)}
+.ov[hidden]{display:none}
+.ov{position:fixed;inset:0;background:rgba(10,14,20,.72);display:grid;place-items:center;z-index:30;padding:16px}
+.ov-box{background:var(--panel);border-radius:18px;max-width:340px;width:100%;overflow:hidden;text-align:center;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
+.ov-box img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.ov-box .t{font-family:var(--f-display);font-size:26px;color:var(--gold);margin-top:10px}
+.ov-box p{margin:4px 16px 0;color:var(--muted);font-size:13px}
+.ov-box button{margin:14px 16px 16px;width:calc(100% - 32px);font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px;background:var(--xp);color:#fff;cursor:pointer}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+.spark{animation:spark 1.6s ease-in-out infinite}
+@keyframes spark{50%{opacity:.2}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+.bob{animation:bob 2.6s ease-in-out infinite;transform-origin:center}
+@keyframes bob{50%{transform:translateY(-3px)}}
+</style>
+
+<style>
+.wk{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.wcard.opt{border-style:dashed}
+.xbar{background:var(--bg);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:14px}
+.xbar.strong{background:var(--gold-soft);border:1px solid var(--gold)}
+.xrow{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.xbtn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;padding:7px 14px;cursor:pointer;margin-left:6px}
+.xrow .xbtn{margin-left:0}
+.xbtn.yes{background:var(--ok);border-color:var(--ok);color:#fff}
+.wcard.xcard{border-color:var(--xp)}
+details.steps{font-size:13px;background:var(--bg);border-radius:8px;padding:6px 10px}
+details.steps summary{cursor:pointer;font-weight:600;color:var(--xp)}
+details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
+.wcard .who{font-size:11px;font-weight:600;color:var(--xp);background:var(--xp-soft);border-radius:6px;padding:1px 7px;justify-self:start}
+.wcard .row2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.wcard button.ghost{background:transparent;border:1px solid var(--line);font-weight:500;color:var(--muted)}
+.task .step{font-size:12px;color:var(--ink);background:var(--bg);border-radius:8px;padding:6px 8px;margin-top:6px}
+.week .del{font-weight:600;color:var(--ink)}
+.week .hol{font-size:12px;color:var(--warn)}
+.crit{display:grid;gap:8px;margin:0;padding-left:20px;font-size:14px}
+.real{display:grid;gap:10px}
+.rrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.rrow .rn{font-weight:600;font-size:14px}
+.rrow .rs{font-size:12px;color:var(--muted)}
+.rrow input[type=text]{width:100%;font:inherit;font-size:13px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);margin-top:4px}
+.rrow .badge{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.badge.lock{background:var(--bg);color:var(--muted)}
+.badge.ready{background:var(--gold-soft);color:var(--gold);border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
+.badge.got{background:var(--ok-soft);color:var(--ok)}
+.art{display:grid;place-items:center;width:100%;height:100%;aspect-ratio:3/4;font-size:64px;color:#fff;background:linear-gradient(160deg,var(--a1),var(--a2))}
+.ov-box .art{font-size:96px}
+.art-l1{--a1:#F2A65A;--a2:#6A4C93}.art-l2{--a1:#8EA9C1;--a2:#3D5A80}.art-l3{--a1:#2B2D42;--a2:#8D99AE}.art-l4{--a1:#9D0208;--a2:#F48C06}
+.art-l5{--a1:#7209B7;--a2:#4CC9F0}.art-l6{--a1:#22223B;--a2:#C9ADA7}.art-l7{--a1:#FF7B54;--a2:#FFD56F}.art-l8{--a1:#111;--a2:#5E548E}
+.item.locked .art{filter:grayscale(1) brightness(.4)}.card.locked .art{filter:grayscale(1) brightness(.3)}
+.vnote.ok{background:var(--ok-soft);color:var(--ok)}
+.vnote.bad{background:var(--gold-soft);color:var(--warn)}
+.task .vnote{margin-top:6px;font-size:12px;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--muted)}
+.task .vnote.ok{background:var(--ok-soft);color:var(--ok)} .task .vnote.bad{background:var(--gold-soft);color:var(--warn)}
+.ov-box.fm{max-width:420px;text-align:left;padding:16px}
+.ov-box.fm .t{font-size:20px;margin:0 0 6px}
+.ov-box.fm p{margin:0 0 10px}
+.ov-box.fm label{display:block;font-size:13px;font-weight:600;margin-top:10px}
+.ov-box.fm input,.ov-box.fm textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);margin-top:4px}
+.ov-box.fm textarea{min-height:90px;resize:vertical}
+.ov-box.fm .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.ov-box.fm .row2 button{margin:0;width:100%}
+.ov-box.fm button.sec{background:var(--bg);color:var(--ink)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>十二周冒险岛 <span style="font-size:.6em;color:var(--muted)">v1</span></h1>
+      <div class="sub" id="subline">2026.11.09 – 2027.01.31 · 用 Claude Code、ChatGPT、Gemini、Grok Bot 和 GitHub 做出以前做不到的事<span id="planver"></span></div>
+    </div>
+    <div class="wallet">
+      <span class="chip gold">🪙 <span class="num" id="coins">0</span></span>
+      <span class="chip xp">✦ XP <span class="num" id="xp">0</span></span>
+      <span class="chip ok">🔥 连续 <span class="num" id="streak">0</span> 天</span>
+      <button class="chip exp" id="refresh">🔄 刷新验收</button>
+      <button class="chip exp" id="exportBtn">⬇ 导出给 Grok</button>
+      <button class="chip exp" id="backupBtn">💾 备份</button>
+      <label class="chip exp" for="restoreFile">📂 导入备份</label>
+      <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+    </div>
+  </header>
+
+  <div class="grid2">
+    <section class="panel herop">
+      <div class="stage" id="stage"></div>
+      <div class="hero-name"><b id="lookname">城市初见</b><span id="mood"></span></div>
+      <div class="lvl"><span class="title" id="ltitle">新手村民</span><span class="num" id="lnum">LV 1</span></div>
+      <div class="bar" style="margin-top:6px"><i id="lbar" style="width:0"></i></div>
+      <div class="note" id="lnext" style="margin-top:4px"></div>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section class="panel">
+      <h2>今日任务 <small id="savestate">进度保存中…</small></h2>
+      <div class="daynav">
+        <button id="prev" aria-label="前一天">◀</button>
+        <strong id="dlabel"></strong>
+        <button id="next" aria-label="后一天">▶</button>
+        <span class="note" id="dweek"></span>
+        <button id="leave" style="margin-left:auto">这天请假</button>
+      </div>
+      <div id="tasks"></div>
+      <div class="combo" id="combo"></div>
+    </section>
+  </div>
+
+  <section class="panel">
+    <h2>本周任务 <small id="wklabel"></small></h2>
+    <div id="extraBox"></div>
+    <div class="wk" id="weekly"></div>
+  </section>
+
+  <section class="panel">
+    <h2>城市衣橱 <small>用金币解锁新造型，等级越高解锁越多</small></h2>
+    <div class="shop" id="shop"></div>
+  </section>
+
+  <section class="panel">
+    <h2>收藏图鉴 <small id="galcount"></small></h2>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+  <section class="panel">
+    <h2>现实奖励 <small>奖励内容自己填，达成后点一下记为已兑现</small></h2>
+    <div class="real" id="real"></div>
+  </section>
+
+  <section class="panel">
+    <h2>12 周冒险地图 <small>📦 要交出 · 🗝️ Claude Code · 🐙 GitHub · 🤖 ChatGPT · ✨ Gemini · ⚡ Grok · 🎬 视频（可选）· 🗣️ 英语</small></h2>
+    <div class="map" id="map"></div>
+  </section>
+
+  <section class="panel">
+    <h2>12 周后你能做到什么 <small>终章逐条验收</small></h2>
+    <div class="rules">
+      <div><b>🗝️ Claude Code</b>在本地仓库里指挥它读、改多个文件并审查每一步；写 CLAUDE.md 定规矩；装现成 Skill、写自己的 Skill；写自定义斜杠命令。</div>
+      <div><b>🐙 Git（GitHub Desktop）</b>用 GitHub Desktop 独立完成添加和克隆仓库、查看改动、提交、推送、拉取、看历史、撤回提交、新建切换合并分支；看得懂 Claude Code 替你执行的 Git 操作。</div>
+      <div><b>🌐 GitHub</b>README 和 Markdown、.gitignore、Pages 网页上线、Issues + 标签 + 里程碑 + 看板、提交自动关闭 Issue、Pull Request、Fork、Release、个人主页作品集。</div>
+      <div><b>⚙️ 自动化</b>写 GitHub Actions 定时工作流，读懂运行日志并修好报错。</div>
+      <div><b>🧰 办公自动化</b>Excel 自动报表、从 Excel 一键生成 PPT。脚本由 Claude Code 写，你会运行、核对结果、出错时用副本恢复；看懂 CSV、JSON 和 YAML。</div>
+      <div><b>🌍 网页基础</b>知道 HTML、CSS、JS 各管什么；会用本地服务器和浏览器开发者工具排错。</div>
+      <div><b>🤖 多模型分工</b>ChatGPT 讲解和写文档、Gemini 看图出图、Grok 查实时信息和挑刺，各交出能保存、能给别人看的成果。</div>
+      <div><b>🔗 工作流</b>把 Claude Code + GitHub + 至少一个其他模型串成一条能重复跑的流程。</div>
+      <div><b>🤝 两方协作</b>Claude 当项目负责人，OpenAI 桌面版里的 ChatGPT 当教练、Codex 做独立审查；双方通过私有仓库 ai-12week-lab 共享进度、决定和交接。</div>
+    </div>
+    <h3 style="margin-top:16px;font-size:16px">到时候拿得出手的 6 件作品</h3>
+    <ol class="crit">
+      <li>Excel 自动报表：公式、格式、图表齐全（第 3 周），之后由 Actions 每周自动生成（第 9 周）</li>
+      <li>一键 PPT 汇报：双击从数据生成可编辑的 PPT（第 4 周）</li>
+      <li>上线的英语词卡网站，手机能打开（第 5 周）</li>
+      <li>自己写的 Skill「脚本润色」，经 Pull Request 合并（第 8 周）</li>
+      <li>一条可重复的多模型工作流和说明文档（第 10 周）</li>
+      <li>GitHub 主页作品集 + <b>目标闯关计划工具 v1.0</b>（重点项目，必须完成）：开局判断可行性、每日打卡、补打卡和回归模式、周复盘、进度预警的网页工具，随 v1.0 Release 发布（第 7 周大纲 / 第 11 周做出 / 第 12 周发布）</li>
+    </ol>
+    <p class="note" style="margin-top:10px">每件作品验收都问 5 个问题：解决了什么问题？从哪启动、准备什么输入？怎么判断结果对不对？出错怎么停下、保护原件、恢复？换一份数据还能照说明再做一次吗？</p>
+    <p class="note" style="margin-top:6px">视频是可选的过程记录，12 周建议 4–6 条，不是过关条件。</p>
+  </section>
+
+  <section class="panel">
+    <h2>规则说明</h2>
+    <div class="rules">
+      <div><b>🧭 第一原则</b>把「学多少技术」让位于「你能否独立用起来」。凡是要敲命令的步骤都由 Claude Code 执行，你看懂并批准；你要会的是启动工具、准备输入、判断结果、出错时停下并恢复。</div>
+      <div><b>📦 放哪个仓库</b>作品、脚本、网页放 xiaoxuanzi-channel（公开）；计划、进度、交接放 ai-12week-lab（私有）。任务里没特别说明的「仓库」都指 xiaoxuanzi-channel。真实健康数据、工作资料不进任何仓库，练习用模拟数据。</div>
+      <div><b>📋 每日 5 项</b>晨练（100 个简易波比 + 一组自重力量，两项都做完）、12000 步、控制饮食、ChatGPT 英语、主技术块。剪映不再每日必做。</div>
+      <div><b>🦵 酸痛日</b>可以用不少于 1 小时的健步走代替力量；步数仍要满 12000，波比能做还是做。</div>
+      <div><b>🗝️ 主技术块</b>通勤学 + 回家动手 45–60 分钟，内容必须对应当周地图。提交当天成果，Claude 确认后才发 50 金币，未验收不算全勤。</div>
+      <div><b>🗣️ 英语</b>每周至少 5 天。这周已经练满 5 天后，其余日子不练英语也不影响全勤。</div>
+      <div><b>🎯 全勤连击</b>当天应做项全部完成 +15；连续 7 天全勤再 +60。</div>
+      <div><b>👑 周任务</b>Claude Code 关 +100、GitHub 关 +80；第 4、8、12 周是 Boss 周，两关奖励翻倍，两关都过才算打败 Boss。</div>
+      <div><b>🤖 指定模型交付</b>ChatGPT、Gemini、Grok 每周各一个具体任务，要交出可保存的文件或截图，各 +25。</div>
+      <div><b>🔍 验收</b>所有验收类任务（主技术块、Claude Code 关、GitHub 关、ChatGPT / Gemini / Grok 交付）都由 Claude 确认：按任务里写的「验收证明」发给 Claude，确认后才发金币。</div>
+      <div><b>🚀 提前完成就加任务</b>本周 Claude Code 关和 GitHub 关都验收通过后，页面会问你要不要再加一个本周任务。点「是」立刻领到下一个拓展任务（按顺序，领第一个已到周次的，+60），做完验收后还能继续领，不用等下周。</div>
+      <div><b>🧩 任务都是具体的</b>每个任务都写了具体步骤、交付物和验收证明。照着步骤做，每一步都对应一个要学会的实际操作。</div>
+      <div><b>🎬 视频可选</b>主题是「没有计算机背景的普通打工人用 AI 做事」，12 周建议 4–6 条。不做视频不影响全勤，也不挡技术关。</div>
+      <div><b>🎄 节日周</b>第 7、8 周跨圣诞和元旦，视频可停，技术关不取消，周末实战块可以放到假期，截止仍是当周最后一天。</div>
+      <div><b>🧱 卡关怎么办</b>一个问题卡了 60 分钟就停手，把报错截图发给 Claude，不硬耗。进度落后时按这个顺序先放：视频 → 拓展任务 → 模型交付；Claude Code 关、GitHub 关和每日主技术块不放。</div>
+      <div><b>🔙 补打卡</b>只能补记前两天，再往前就锁定。</div>
+      <div><b>🖱️ 铁律：GitHub 操作优先用 GitHub Desktop</b>所有涉及 GitHub 的操作（建仓库、克隆、提交、推送、拉取、分支、发 Pull Request）一律先给 GitHub Desktop 的点按钮做法；Desktop 做不到的（如 Pages、Issues、Actions、Release、仓库设置）才用网页，不要求你敲 Git 命令。Claude Code 自己会运行 Git 命令，你只需看懂并批准。这条适用于以后每一个 12 周计划。</div>
+    </div>
+  </section>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="ov" id="form" hidden><div class="ov-box fm" role="dialog" aria-modal="true" aria-labelledby="fT"><div class="t" id="fT"></div><p class="note" id="fP"></p>
+<label for="fUrl">成果网址（GitHub 文件、提交或仓库链接）</label><input id="fUrl" type="url" maxlength="500" placeholder="https://github.com/...">
+<label for="fNote">说明（截图发到和 Claude 的对话里，这里写一句发了什么）</label><textarea id="fNote" maxlength="1000" placeholder="比如：History 截图已发 Claude，能看到 2 次提交"></textarea>
+<p class="note" style="margin-top:8px">提交后会自动复制一段「验收申请」，粘贴到和 Claude 的对话里发送。</p>
+<div class="row2"><button class="sec" id="fCancel">取消</button><button id="fSend">提交并复制</button></div></div></div>
+<div class="ov" id="copyOv" hidden><div class="ov-box fm" role="dialog" aria-modal="true"><div class="t">复制验收申请</div><p class="note">自动复制没成功，请长按下面的文字全选复制，发给 Claude。</p><textarea id="cpText" readonly></textarea><div class="row2"><span></span><button id="cpClose">好了</button></div></div></div>
+<div class="ov" id="ov" hidden><div class="ov-box" role="dialog" aria-modal="true" aria-labelledby="ovt"><div id="ovart"></div><div class="t" id="ovt"></div><p id="ovp"></p><button id="ovclose">收下奖励</button></div></div>
+
+
+
+<script>
+const START = "2026-11-09"; // 第1周周一
+const REV = "2026-11-11";   // 修订生效日：之前的日子按旧规则结算，保证历史金币不变
+const OLD_DAILY = [
+  {id:"fit",  ico:"💪", name:"晨练（旧规则）", kind:"t", goal:45, unit:"分钟", coin:20, stat:"体力", meta:"计时 · 满 45 分钟"},
+  {id:"steps",ico:"👟", name:"12000 步", kind:"t", goal:12000, unit:"步", coin:15, stat:"体力", meta:"计数 · 满 12000 步"},
+  {id:"diet", ico:"🥗", name:"控制饮食", kind:"c", coin:10, stat:"体力", meta:"打卡"},
+  {id:"eng",  ico:"🗣️", name:"ChatGPT 英语", kind:"c", coin:20, stat:"语言", meta:"打卡"},
+  {id:"edit", ico:"🎬", name:"剪映（旧规则）", kind:"t", goal:30, unit:"分钟", coin:20, stat:"创作", meta:"计时 · 满 30 分钟"},
+  {id:"ai",   ico:"🧠", name:"用其他 AI 做一件事", kind:"c", coin:10, stat:"智识", meta:"打卡"},
+  {id:"cc",   ico:"🗝️", name:"Claude Code / GitHub 练习", kind:"v", coin:35, stat:"技术", meta:"验收 · Claude 确认后发金币"}
+];
+const DAILY = [
+  {id:"fit",  ico:"💪", name:"晨练：波比 + 力量", kind:"c", coin:20, stat:"体力", meta:"打卡 · 100 个简易波比 + 一组自重力量（俯卧撑 15、深蹲 20、平板支撑 45 秒、弓步每条腿 10），两项都做完；酸痛日可用 ≥1 小时健步走代替力量"},
+  {id:"steps",ico:"👟", name:"12000 步", kind:"t", goal:12000, unit:"步", coin:15, stat:"体力", meta:"计数 · 以手机或手环为准，满 12000 才算"},
+  {id:"diet", ico:"🥗", name:"控制饮食", kind:"c", coin:10, stat:"体力", meta:"打卡 · 按自己的饮食计划执行并记下"},
+  {id:"eng",  ico:"🗣️", name:"ChatGPT 英语", kind:"c", coin:20, stat:"语言", meta:"打卡 · 固定流程：让 ChatGPT 扮演本周场景里的对方，英文对话 10 轮 → 让它列出你的 3 个错误 → 你把这 3 句改对后重说一遍；每周至少 5 天"},
+  {id:"cc",   ico:"🗝️", name:"主技术块", kind:"v", coin:50, stat:"技术", meta:"验收 · 按下面「今天的任务」做，通勤学 + 回家动手 45–60 分钟，把证明发给 Claude"}
+];
+// 修订前就有的旧任务记录（如剪映分钟、其他 AI 打卡）：已记下的照旧计金币，但不再算全勤
+const LEGACY_EXTRA = [
+  {id:"edit", kind:"t", goal:30, coin:20, stat:"创作"},
+  {id:"ai",   kind:"c", coin:10, stat:"智识"}
+];
+const WEEKLY = [
+  {id:"quest", ico:"🗝️", name:"周 Claude Code 关", coin:100, stat:"技术", who:"claude", boss:true},
+  {id:"git",   ico:"🐙", name:"周 GitHub 关",      coin:80,  stat:"技术", who:"claude", boss:true},
+  {id:"m_gpt", ico:"🤖", name:"ChatGPT 交付",     coin:25,  stat:"智识", who:"claude"},
+  {id:"m_gem", ico:"✨", name:"Gemini 交付",      coin:25,  stat:"智识", who:"claude"},
+  {id:"m_grok",ico:"⚡", name:"Grok 交付",        coin:25,  stat:"智识", who:"claude"},
+  {id:"pub",   ico:"🎬", name:"发一条视频（可选）", coin:80,  stat:"创作", opt:true},
+  {id:"review",ico:"📝", name:"周复盘五行",       coin:30,  stat:"意志"}
+];
+const STATS = ["体力","语言","创作","技术","智识","意志"];
+const LEVELS = [0,150,400,750,1200,1750,2400,3200,4100,5100,6300,7600,9000];
+const TITLES = ["新手村民","见习冒险者","晨练学徒","剪辑新秀","双语旅人","AI 学者","工具匠人","频道开拓者","Skill 炼金师","一人公司船长","自律骑士","十二周传奇","冒险岛之王"];
+let WEEKS=[],CC=[],GIT=[],GPT=[],GEM=[],GROK=[],DAYS=[],EXTRA=[],PLAN_VERSION="";
+const EXTRA_COIN = 60;
+const LOOKS = [
+  {id:"l1", name:"城市初见",   desc:"白衬衫 · 傍晚街头", price:0},
+  {id:"l2", name:"雨天风衣",   desc:"驼色风衣 · 雨中斑马线", price:300},
+  {id:"l3", name:"夜色皮衣",   desc:"皮夹克长靴 · 城市夜景", price:500, lv:2},
+  {id:"l4", name:"酒红西装",   desc:"西装套装 · 黄昏办公室", price:900, lv:4},
+  {id:"l5", name:"霓虹机能",   desc:"机能风 · 霓虹街道", price:1200, lv:5},
+  {id:"l6", name:"午夜晚礼服", desc:"长礼服 · 酒店旋转楼梯", price:1500, lv:7},
+  {id:"l7", name:"海岸落日",   desc:"亚麻套装 · 红色跑车", price:2000, lv:9},
+  {id:"l8", name:"午夜特工",   desc:"特典 · 集齐 8/8 图鉴解锁", hidden:true}
+];
+const LEGACY = {cap:120,phones:300,wizard:900,crown:2200,track:200,hoodie:450,cape:1200,staff:1100,robot:800,dragon:1600,stars:1000,
+  shades:150,earrings:200,beret:400,fedora:900,trench:300,leather:500,suit:900,tech:1200,gown:1500,coffee:100,mic:250,camera:600,laptop:900,cat:350,dog:800,drone:1500,city:400,neon:700,sunset:1000,car:2000};
+const CARDS = [
+  {id:"c1", name:"第一次全勤", hint:"任意一天应做项全部完成", look:"l1", ok:x=>x.maxRun>=1},
+  {id:"c2", name:"首条视频", hint:"完成一次「发一条视频」", look:"l3", ok:x=>x.pubs>=1},
+  {id:"c3", name:"七日连击", hint:"连续 7 天全勤", look:"l5", ok:x=>x.maxRun>=7},
+  {id:"c4", name:"第一个 Boss", hint:"通过第 4 周 Boss（两关都过）", look:"l4", ok:x=>x.bossW.includes(4)},
+  {id:"c5", name:"晋升 LV5", hint:"等级达到 5", look:"l2", ok:x=>x.lv>=5},
+  {id:"c6", name:"二十一天习惯", hint:"连续 21 天全勤", look:"l7", ok:x=>x.maxRun>=21},
+  {id:"c7", name:"晋升 LV10", hint:"等级达到 10", look:"l6", ok:x=>x.lv>=10},
+  {id:"c8", name:"十二周通关", hint:"通过第 12 周 Boss（两关都过）", look:"l8", ok:x=>x.bossW.includes(12)}
+];
+const REAL = [
+  {id:"lv3",  name:"升到 LV3",  hint:"小奖励", ok:x=>x.lv>=3},
+  {id:"lv6",  name:"升到 LV6",  hint:"小奖励", ok:x=>x.lv>=6},
+  {id:"lv9",  name:"升到 LV9",  hint:"小奖励", ok:x=>x.lv>=9},
+  {id:"lv12", name:"升到 LV12", hint:"小奖励", ok:x=>x.lv>=12},
+  {id:"b4",   name:"打败第 4 周 Boss", hint:"中等奖励", ok:x=>x.bossW.includes(4)},
+  {id:"b8",   name:"打败第 8 周 Boss", hint:"中等奖励", ok:x=>x.bossW.includes(8)},
+  {id:"fin",  name:"第 12 周验收通过", hint:"大奖励，事先记下", ok:x=>x.bossW.includes(12)}
+];
+
+function todayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addDays(s,n){const [y,m,d]=s.split("-").map(Number);const t=new Date(y,m-1,d+n);return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")}
+function diffDays(a,b){const p=s=>{const[y,m,d]=s.split("-").map(Number);return Date.UTC(y,m-1,d)};return Math.round((p(b)-p(a))/864e5)}
+function weekOf(s){return Math.floor(diffDays(START,s)/7)+1}
+function fmtDate(s){const[y,m,d]=s.split("-").map(Number);const w="日一二三四五六"[new Date(y,m-1,d).getDay()];return `${m}月${d}日 周${w}`}
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const rulesFor = day => day<REV?OLD_DAILY:DAILY;
+function dayTask(day){const w=weekOf(day);if(w<1||w>12)return null;const[y,m,d]=day.split("-").map(Number);return DAYS[w-1][(new Date(y,m-1,d).getDay()+6)%7]}
+function taskBox(T,coin){return `<div class="q"><b>${esc(T.t)}</b></div><details class="steps"><summary>具体步骤（${T.s.length} 步）</summary><ol>${T.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></details><div class="vnote">📦 交付：${esc(T.d)}<br>📎 验收证明：${esc(T.p)}</div>`}
+function done(t,e,day){if(t.kind==="v")return !!VD[day];if(!e)return false;const v=e[t.id];return t.kind==="t"?(Number(v)||0)>=t.goal:!!v}
+function engDaysInWeek(day,exclude){const w=weekOf(day);let n=0;for(const[d,e]of Object.entries(S.log)){if(d!==exclude&&weekOf(d)===w&&e&&e.eng)n++}return n}
+function required(t,day){if(day>=REV&&t.id==="eng"&&!(S.log[day]||{}).eng&&engDaysInWeek(day,day)>=5)return false;return true}
+function isLeave(day){return !!(S.log[day]&&S.log[day].leave)}
+function dayFull(day){const e=S.log[day];if(isLeave(day))return false;return rulesFor(day).filter(t=>required(t,day)).every(t=>done(t,e,day))}
+const extraOf = id => EXTRA.find(x=>x.id===id);
+const assignedIds = () => Object.values(S.extra).flat();
+function nextExtra(w){const used=new Set(assignedIds());return EXTRA.find(x=>!used.has(x.id)&&x.min<=w)}
+function coreDone(w){return !!(V[w]&&VG[w])}
+function weeklyOK(t,w){const e=S.weekly[w]||{};if(t.who==="claude")return !!claudeOK(t.id,w);return !!e[t.id]}
+
+/* ---------- 数据 ----------
+   打卡、衣橱、提交记录：只存在这台设备的浏览器里（localStorage）
+   plan.json      计划，放在仓库里，Claude 维护
+   verified.json  验收清单，放在仓库里，Claude 验收后更新；只有任务编号和一句结论
+   键：d_<日期>（主技术块）、w<周>_<任务>（周任务）、x_<编号>（拓展） */
+const KEY="quest-island-v1";
+let LOG={}, WK={}, EX={}, SUB={}, PRO={}, VER={};
+let S={log:{},weekly:{},owned:[],look:"l1",spent:0,real:{},extra:{},extraNo:{}};
+let V={}, VG={}, VD={}, VM={}, VE={};
+const claudeOK=(id,w)=>id==="quest"?V[w]:id==="git"?VG[w]:(VM[w]&&VM[w][id]);
+let canWrite=true, planReady=false, viewDate=todayStr(), storageOK=true;
+
+function loadLocal(){
+  try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{}}}
+  catch(e){storageOK=false}
+}
+function saveLocal(){
+  try{localStorage.setItem(KEY,JSON.stringify({v:1,log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,savedAt:Date.now()}));setSave("已保存在本机 ✓")}
+  catch(e){storageOK=false;setSave("这台设备存不了数据，请导出备份");toast("这次没存上，请先导出备份")}
+}
+function setSave(txt){document.getElementById("savestate").textContent=txt}
+
+/* 验收结果 = 仓库里的 verified.json（以它为准）；本机只记「已提交、等验收」 */
+function subOf(key){const v=VER[key];if(v&&(v.status==="pass"||v.status==="fail")){const mine=SUB[key];if(v.status==="fail"&&mine&&mine.at>(v.at||0))return mine;return v}return SUB[key]}
+function derive(){
+  S={log:LOG, weekly:{}, owned:Array.isArray(PRO.owned)?PRO.owned:[], look:PRO.look||"l1", spent:Number(PRO.spent)||0,
+     real:(PRO.real&&typeof PRO.real==="object")?PRO.real:{}, extra:{}, extraNo:{}};
+  for(const [w,e] of Object.entries(WK)){S.weekly[w]={pub:!!e.pub,review:!!e.review};if(e.no)S.extraNo[w]=true}
+  for(const [id,x] of Object.entries(EX).sort((a,b)=>(a[1].at||0)-(b[1].at||0))) (S.extra[x.week]||(S.extra[x.week]=[])).push(id);
+  V={};VG={};VD={};VM={};VE={};
+  for(const [key,s] of Object.entries(VER)){if(!s||s.status!=="pass")continue;const r=s.reply||"已验收";
+    let m;
+    if(m=key.match(/^d_(\d{4}-\d{2}-\d{2})$/))VD[m[1]]=r;
+    else if(m=key.match(/^x_(E\d+)$/))VE[m[1]]=r;
+    else if(m=key.match(/^w(\d+)_(\w+)$/)){const w=+m[1],id=m[2];if(id==="quest")V[w]=r;else if(id==="git")VG[w]=r;else (VM[w]||(VM[w]={}))[id]=r}}
+}
+
+function subNote(s){
+  if(!s) return "";
+  if(s.status==="pass") return `<div class="vnote ok">🔍 Claude：${esc(s.reply||"已验收")}</div>`;
+  if(s.status==="fail") return `<div class="vnote bad">↩︎ 未通过：${esc(s.reply||"")}</div>`;
+  return `<div class="vnote">⏳ 已提交，等 Claude 验收${s.url?`<br>🔗 ${esc(s.url)}`:""}${s.note?`<br>📝 ${esc(s.note)}`:""}</div>`;
+}
+function subBlock(key,ok,kind,ref,w,title,proof){
+  const s=subOf(key);
+  if(ok) return subNote(s)+`<button class="on" disabled>已验收 ✓</button>`;
+  if(s&&s.status==="pending") return subNote(s)+`<div class="row2"><button class="pend" data-copy="${key}">📋 复制验收申请</button><button class="ghost" data-wd="${key}">撤回</button></div>`;
+  return subNote(s)+`<button data-open="${key}|${kind}|${ref}|${w}">${s&&s.status==="fail"?"重新提交":"提交验收"}</button>`;
+}
+function proofFor(kind,ref,w){
+  if(kind==="day"){const D=dayTask(ref);return D?{t:"主技术块："+D.t,p:D.p||""}:{t:"主技术块",p:""}}
+  if(kind==="extra"){const T=extraOf(ref);return {t:"拓展 "+ref+"："+(T?T.t:""),p:T?T.p:""}}
+  const SRC={quest:CC,git:GIT,m_gpt:GPT,m_gem:GEM,m_grok:GROK}[ref];const T=SRC&&SRC[w-1];
+  return {t:(WEEKLY.find(x=>x.id===ref)||{}).name+"："+(T?T.t:""),p:T?T.p:""};
+}
+function requestText(key){
+  const s=SUB[key];if(!s)return "";const P=proofFor(s.kind,s.ref,s.week);
+  const when=s.kind==="day"?s.ref+" ":"第 "+s.week+" 周 ";
+  return `【验收申请】${when}${P.t}\n编号：${key}${s.url?"\n网址："+s.url:""}${s.note?"\n说明："+s.note:""}`;
+}
+async function copyRequest(key){
+  const t=requestText(key);
+  try{await navigator.clipboard.writeText(t);toast("已复制，粘贴到和 Claude 的对话里发送")}
+  catch(e){document.getElementById("cpText").value=t;document.getElementById("copyOv").hidden=false;document.getElementById("cpText").select()}
+}
+
+/* ---------- 提交验收弹窗 ---------- */
+let formKey=null;
+function openForm(spec){
+  const [key,kind,ref,w]=spec.split("|");formKey={key,kind,ref,week:Number(w)};
+  const P=proofFor(kind,ref,Number(w));
+  document.getElementById("fT").textContent=P.t;
+  document.getElementById("fP").textContent=P.p?"📎 需要的验收证明："+P.p:"";
+  const old=SUB[key]||{};
+  document.getElementById("fUrl").value=old.url||"";
+  document.getElementById("fNote").value=old.note||"";
+  document.getElementById("form").hidden=false;document.getElementById("fUrl").focus();
+}
+function closeForm(){document.getElementById("form").hidden=true;formKey=null}
+document.getElementById("fCancel").addEventListener("click",closeForm);
+document.getElementById("fSend").addEventListener("click",()=>{
+  if(!formKey)return;const url=document.getElementById("fUrl").value.trim().slice(0,500),note=document.getElementById("fNote").value.trim().slice(0,1000);
+  if(!url&&!note){toast("填一个网址，或写一句说明");return}
+  const f=formKey;SUB[f.key]={kind:f.kind,ref:f.ref,week:f.week,url,note,at:Date.now(),status:"pending"};
+  saveLocal();derive();render();closeForm();copyRequest(f.key);
+});
+document.getElementById("cpClose").addEventListener("click",()=>{document.getElementById("copyOv").hidden=true});
+
+function compute(){
+  let coins=0, stats=Object.fromEntries(STATS.map(k=>[k,0]));
+  const add=(c,k)=>{coins+=c;stats[k]+=c};
+  for(const day of new Set([...Object.keys(S.log),...Object.keys(VD)])){const e=S.log[day];
+    for(const t of rulesFor(day)) if(done(t,e,day)) add(t.coin,t.stat);
+    if(day>=REV) for(const t of LEGACY_EXTRA) if(done(t,e,day)) add(t.coin,t.stat);
+    if(dayFull(day)) add(15,"意志");
+  }
+  const bossW=[];
+  for(let wk=1;wk<=12;wk++){
+    const B=WEEKS[wk-1].boss;
+    for(const t of WEEKLY) if(weeklyOK(t,wk)) add(t.boss&&B?t.coin*2:t.coin,t.stat);
+    if(B&&V[wk]&&VG[wk]) bossW.push(wk);
+    for(const id of (S.extra[wk]||[])) if(VE[id]) add(EXTRA_COIN,"技术");
+  }
+  const days=Object.keys(S.log).filter(dayFull).sort(); let run=0, prev=null, maxRun=0;
+  const bridged=(a,b)=>{for(let x=addDays(a,1);x<b;x=addDays(x,1))if(!isLeave(x))return false;return true};
+  for(const d of days){run=(prev&&bridged(prev,d))?run+1:1;prev=d;maxRun=Math.max(maxRun,run);if(run%7===0)add(60,"意志")}
+  let streak=0, d=todayStr(); if(!dayFull(d)&&!isLeave(d)) d=addDays(d,-1);
+  while(dayFull(d)||(isLeave(d)&&d>START)){if(dayFull(d))streak++;d=addDays(d,-1)}
+  const xp=coins;
+  let lv=0; while(lv+1<LEVELS.length&&xp>=LEVELS[lv+1]) lv++;
+  const pubs=Object.values(S.weekly).filter(e=>e&&e.pub).length;
+  const lastFull=dayFull(todayStr())||dayFull(addDays(todayStr(),-1));
+  const mood=streak>=7?"star":streak>=1?"smile":(Object.keys(S.log).length&&!lastFull?"sad":"calm");
+  const out={xp, coins:coins-S.spent, stats, lv:lv+1, streak, maxRun, pubs, bossW, boss:bossW.length, mood};
+  out.cards=CARDS.filter(k=>k.ok(out)).map(k=>k.id);
+  return out;
+}
+
+const ART={l1:"🌆",l2:"☔",l3:"🌃",l4:"🍷",l5:"🌈",l6:"✨",l7:"🌅",l8:"🕶️"};
+function imgTag(id,cls,alt){return `<div class="art art-${id} ${cls||""}" role="img" aria-label="${esc(alt||"")}"><span>${ART[id]||"⭐"}</span></div>`}
+function extraCards(w){
+  return (S.extra[w]||[]).map(id=>{const T=extraOf(id);if(!T)return "";const v=VE[id];
+    const mv=!v&&w<12?`<button class="ghost" data-mv="${id}" ${canWrite?"":"disabled"}>顺延到第 ${w+1} 周</button>`:"";
+    return `<div class="wcard xcard"><div><span style="font-size:20px">🚀</span> <b>拓展 ${id} · ${esc(T.area)}</b> <span class="note">+${EXTRA_COIN} 🪙</span></div>${taskBox(T,EXTRA_COIN)}${subBlock("x_"+id,!!v,"extra",id,w,T.t,T.p)}${mv}</div>`}).join("");
+}
+function extraBanner(w){
+  if(w!==Math.min(Math.max(weekOf(todayStr()),1),12)) return "";
+  if(!coreDone(w)) return "";
+  const mine=S.extra[w]||[];
+  if(mine.some(id=>!VE[id])) return `<div class="xbar">🚀 本周已领 ${mine.length} 个拓展任务，验收通过后可以再领下一个。</div>`;
+  const n=nextExtra(w);
+  if(!n) return `<div class="xbar">🚀 本周核心关卡已完成！拓展任务池里暂时没有适合这周的任务了，告诉 Claude 帮你生成新的。</div>`;
+  if(S.extraNo[w]) return `<div class="xbar">本周核心关卡已完成。<button class="xbtn" data-xadd="${n.id}">还是加一个拓展任务</button></div>`;
+  return `<div class="xbar strong">🎉 本周核心关卡已完成${mine.length?`，拓展任务也做完了 ${mine.length} 个`:""}！要再加一个本周任务吗？<br><span class="note">下一个：${n.id}「${esc(n.t)}」· ${esc(n.area)} · +${EXTRA_COIN} 🪙</span><span class="xrow"><button class="xbtn yes" data-xadd="${n.id}">是，加一个</button><button class="xbtn" data-xno="${w}">暂不</button></span></div>`;
+}
+
+function render(){
+  const c=compute();
+  document.getElementById("coins").textContent=c.coins;
+  document.getElementById("xp").textContent=c.xp;
+  document.getElementById("streak").textContent=c.streak;
+  const L=LOOKS.find(x=>x.id===S.look)||LOOKS[0];
+  document.getElementById("stage").innerHTML=imgTag(L.id,"hero","当前造型："+L.name);
+  document.getElementById("lookname").textContent=L.name;
+  document.getElementById("mood").textContent={star:"✨ 状态爆棚",smile:"🙂 状态不错",calm:"等待第一次打卡",sad:"😟 昨天没全勤…"}[c.mood];
+  document.getElementById("galcount").textContent=`已收集 ${c.cards.length} / ${CARDS.length}，集齐 8/8 解锁特典「午夜特工」`;
+  document.getElementById("gallery").innerHTML=CARDS.map(k=>{const on=c.cards.includes(k.id);
+    return `<div class="card ${on?"":"locked"}">${imgTag(k.look)}<div class="cap"><b>${on?k.name:"？？？"}</b><span>${k.hint}</span></div></div>`}).join("");
+  const lvIdx=c.lv-1, cur=LEVELS[lvIdx], nxt=LEVELS[lvIdx+1];
+  document.getElementById("ltitle").textContent=TITLES[lvIdx];
+  document.getElementById("lnum").textContent="LV "+c.lv;
+  document.getElementById("lbar").style.width=nxt?Math.round((c.xp-cur)/(nxt-cur)*100)+"%":"100%";
+  document.getElementById("lnext").textContent=nxt?`再获得 ${nxt-c.xp} XP 升到「${TITLES[lvIdx+1]}」`:"已满级，传奇达成";
+  const mx=Math.max(400,...Object.values(c.stats));
+  document.getElementById("stats").innerHTML=STATS.map(k=>`<div class="stat"><span>${k}</span><div class="bar"><i style="width:${Math.round(c.stats[k]/mx*100)}%;background:${{"体力":"var(--ok)","语言":"var(--xp)","创作":"var(--warn)","技术":"#2B7A8C","智识":"#3E8ED0","意志":"var(--gold)"}[k]}"></i></div><span class="v num">${c.stats[k]}</span></div>`).join("");
+
+  // day
+  const today=todayStr(), wk=weekOf(viewDate), locked=diffDays(viewDate,today)>2||diffDays(today,viewDate)>0;
+  const W=WEEKS[Math.min(Math.max(wk,1),12)-1];
+  document.getElementById("dlabel").textContent=(viewDate===today?"今天 · ":"")+fmtDate(viewDate);
+  document.getElementById("dweek").textContent=wk>=1&&wk<=12?`第 ${wk} 周 · ${W.t}`:(wk<1?"冒险尚未开始":"12 周已完成");
+  document.getElementById("prev").disabled=diffDays(viewDate,today)>=2||viewDate<=START;
+  document.getElementById("next").disabled=viewDate>=today;
+  const e=S.log[viewDate]||{};
+  const old=viewDate<REV;
+  const engN=engDaysInWeek(viewDate,null);
+  document.getElementById("tasks").innerHTML=(old?`<div class="note" style="padding:8px 0">这一天在修订前，按旧规则的 7 项结算，仍可在补打卡期限内补记。</div>`:"")+rulesFor(viewDate).map(t=>{
+    const ok=done(t,e,viewDate);
+    const dis=(locked||!canWrite)?"disabled":"";
+    const sd=subOf("d_"+viewDate);
+    const ctl=t.kind==="v"
+      ?(ok?`<span class="vok">已验收 ✓</span>`:sd&&sd.status==="pending"?`<button class="vbtn pend" data-copy="d_${viewDate}">📋 复制申请</button>`:`<button class="vbtn" data-open="d_${viewDate}|day|${viewDate}|${weekOf(viewDate)}" ${dis}>${sd&&sd.status==="fail"?"重新提交":"提交验收"}</button>`)
+      :t.kind==="t"
+      ?`<div class="timer"><input id="in-${t.id}" type="number" min="0" max="100000" inputmode="numeric" value="${e[t.id]||""}" placeholder="0" aria-label="${t.name}" class="wide ${ok?"met":""}" ${dis}><span>${t.unit}</span></div>`
+      :`<button class="check ${ok?"on":""}" data-c="${t.id}" aria-pressed="${ok}" aria-label="${t.name}" ${dis}>✓</button>`;
+    let extra="";
+    if(t.id==="cc"){const D=old?null:dayTask(viewDate);extra=(D?`<div class="step"><b>今天的任务：${esc(D.t)}</b><br>${esc(D.s)}${D.p?`<br>📎 验收证明：${esc(D.p)}`:""}</div>`:"")+subNote(subOf("d_"+viewDate));}
+    if(t.id==="eng"&&!old) extra=`<div class="meta">本周已练 ${engN} / 5 天${!e.eng&&engDaysInWeek(viewDate,viewDate)>=5?"，今天不练也不影响全勤":""}</div>`;
+    return `<div class="task"><div class="ico">${t.ico}</div><div style="min-width:0"><div class="name">${t.name}<span class="tag ${t.kind}">${{t:"计数",c:"打卡",v:"验收"}[t.kind]}</span></div><div class="meta">${t.meta} · +${t.coin} 🪙</div>${extra}</div>${ctl}</div>`;
+  }).join("");
+  const req=rulesFor(viewDate).filter(t=>required(t,viewDate));
+  const n=req.filter(t=>done(t,S.log[viewDate],viewDate)).length;
+  const cb=document.getElementById("combo");
+  const lv=isLeave(viewDate);
+  cb.className="combo"+(n===req.length&&!lv?"":" off");
+  cb.textContent=lv?"🛌 这天请假：不算全勤，也不打断连击":n===req.length?"🎯 全勤达成！额外 +15 金币":`应做 ${req.length} 项，已完成 ${n} 项；主技术块验收后才算全勤`;
+  const lb=document.getElementById("leave");lb.textContent=lv?"取消请假":"这天请假";lb.disabled=locked||!canWrite;
+
+  // weekly
+  const w=Math.min(Math.max(wk,1),12), we=S.weekly[w]||{};
+  document.getElementById("wklabel").textContent=`第 ${w} 周 · ${W.t}（${W.d}）${W.boss?" · ⚔️ Boss 周，两关奖励翻倍，两关都过才算打败 Boss":""}${W.hol?" · 🎄 "+W.hol:""}`;
+  const SRC={quest:CC, git:GIT, m_gpt:GPT, m_gem:GEM, m_grok:GROK};
+  const desc={pub:W.v, review:"五行：做得好的 / 卡住的 / 下周改什么 / 本周实际花了多少小时 / 三个模型谁做得好、谁出过错"+(W.boss?"。Boss 周加一问：这件作品值不值得做成一期视频或小产品":"")+(W.rq?"。本周复盘还要单独讨论："+W.rq.map((x,i)=>(i+1)+"）"+x).join(" "):"")};
+  document.getElementById("weekly").innerHTML=WEEKLY.map(t=>{
+    const coin=t.boss&&W.boss?t.coin*2:t.coin;
+    const head=`<div><span style="font-size:20px">${t.ico}</span> <b>${t.name}</b> <span class="note">+${coin} 🪙</span></div>`;
+    if(SRC[t.id]){
+      const T=SRC[t.id][w-1], v=claudeOK(t.id,w);
+      return `<div class="wcard">${head}${taskBox(T,coin)}${subBlock("w"+w+"_"+t.id,!!v,"week",t.id,w,T.t,T.p)}</div>`;
+    }
+    const on=!!we[t.id];
+    return `<div class="wcard ${t.opt?"opt":""}">${head}<div class="q">${esc(desc[t.id])}</div><button data-w="${t.id}" class="${on?"on":""}" ${canWrite?"":"disabled"}>${on?"已完成 ✓":"完成"}</button></div>`;
+  }).join("")+extraCards(w);
+  document.getElementById("extraBox").innerHTML=extraBanner(w);
+
+  // shop
+  const all=c.cards.length===CARDS.length;
+  document.getElementById("shop").innerHTML=LOOKS.map(i=>{
+    const own=i.id==="l1"||S.owned.includes(i.id), worn=L.id===i.id, lvOK=i.hidden?all:(!i.lv||c.lv>=i.lv);
+    let btn, lock="";
+    if(worn) btn=`<button class="worn" disabled>当前造型</button>`;
+    else if(own) btn=`<button class="eq" data-eq="${i.id}">换上</button>`;
+    else if(i.hidden){btn=`<button disabled>集齐图鉴解锁</button>`;lock="特典"}
+    else if(!lvOK){btn=`<button disabled>🪙 ${i.price}</button>`;lock=`LV ${i.lv} 解锁`}
+    else btn=`<button data-buy="${i.id}" ${c.coins>=i.price&&canWrite?"":"disabled"}>🪙 ${i.price}</button>`;
+    const show=own||(!i.hidden&&lvOK);
+    return `<div class="item ${show?"":"locked"}"><div class="ph">${imgTag(i.id,"",i.name)}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
+  }).join("");
+
+  // real rewards
+  document.getElementById("real").innerHTML=REAL.map(r=>{
+    const st=S.real[r.id]||{}, ok=r.ok(c);
+    const badge=st.done?`<span class="badge got">已兑现 ✓</span>`:ok?`<button class="badge ready" data-real="${r.id}">已达成，点我记兑现</button>`:`<span class="badge lock">未达成</span>`;
+    return `<div class="rrow"><span style="font-size:20px">${r.id==="fin"?"🏆":r.id.startsWith("b")?"⚔️":"🎁"}</span><div style="min-width:0"><div class="rn">${r.name}</div><div class="rs">${r.hint}</div><input type="text" id="rt-${r.id}" maxlength="60" placeholder="填写奖励，比如：一顿好饭" value="${esc(st.text||"")}" ${canWrite?"":"disabled"}></div>${badge}</div>`;
+  }).join("");
+
+  // map
+  const curW=weekOf(today);
+  document.getElementById("map").innerHTML=WEEKS.map((x,i)=>{
+    const n=i+1, req=WEEKLY.filter(t=>!t.opt), cnt=req.filter(t=>weeklyOK(t,n)).length;
+    return `<div class="week ${n===curW?"now":""} ${n<curW?"done":""}"><h3>${x.boss?"⚔️ ":""}第${n}周 · ${x.t}<span class="num">${cnt}/${req.length}</span></h3>
+    <div class="note">${x.d}</div>${x.hol?`<div class="hol">🎄 ${x.hol}</div>`:""}
+    <div class="row"><span>📦</span><span class="del">${esc(x.del)}</span></div>
+    <div class="row"><span>🗝️</span><span class="${x.boss?"boss":""}">${esc(CC[i].t)}</span></div>
+    <div class="row"><span>🐙</span><span class="${x.boss?"boss":""}">${esc(GIT[i].t)}</span></div>
+    <div class="row"><span>🤖</span><span>${esc(GPT[i].t)}</span></div>
+    <div class="row"><span>✨</span><span>${esc(GEM[i].t)}</span></div>
+    <div class="row"><span>⚡</span><span>${esc(GROK[i].t)}</span></div>
+    <div class="row"><span>🎬</span><span>${esc(x.v)}</span></div>
+    <div class="row"><span>🗣️</span><span>${esc(x.e)}</span></div>
+    ${(S.extra[n]||[]).map(id=>`<div class="row"><span>🚀</span><span>拓展 ${id}：${esc(extraOf(id)?.t||"")}${VE[id]?" ✓":""}</span></div>`).join("")}
+    <details class="steps"><summary>每日主技术块（周一到周日）</summary><ol>${DAYS[i].map(D=>`<li>${esc(D.t)}</li>`).join("")}</ol></details></div>`;
+  }).join("");
+}
+
+/* ---------- 交互 ---------- */
+function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600)}
+function overlay(look,title,text){document.getElementById("ovart").innerHTML=imgTag(look);document.getElementById("ovt").textContent=title;document.getElementById("ovp").textContent=text;document.getElementById("ov").hidden=false;document.getElementById("ovclose").focus()}
+function celebrate(before,msg){let after=compute();
+  if(after.cards.length===CARDS.length&&!S.owned.includes("l8")){PRO.owned=S.owned.concat("l8");saveLocal();derive();after=compute()}
+  render();
+  const newCard=CARDS.find(k=>after.cards.includes(k.id)&&!before.cards.includes(k.id));
+  if(newCard) overlay(newCard.look,"解锁图鉴！",`「${newCard.name}」已收入图鉴`+(after.cards.length===CARDS.length?"，特典「午夜特工」已解锁":""));
+  else if(after.lv>before.lv){const nl=LOOKS.find(x=>x.lv===after.lv);overlay(nl?nl.id:(S.look||"l1"),`LV ${after.lv} 升级！`,`新称号「${TITLES[after.lv-1]}」`+(nl?`，新造型「${nl.name}」可以购买了`:"")+(after.lv%3===0?"。记得兑现现实奖励！":""))}
+  else if(msg) toast(msg)}
+/* 先改本机数据，存好，再刷新画面 */
+function mutate(fn,msg){if(!planReady)return;const before=compute();fn();saveLocal();derive();celebrate(before,msg)}
+const syncPro=()=>{PRO={owned:S.owned.slice(),look:S.look,spent:S.spent,real:JSON.parse(JSON.stringify(S.real))}};
+document.getElementById("ovclose").addEventListener("click",()=>{document.getElementById("ov").hidden=true});
+const curWeek=()=>Math.min(Math.max(weekOf(viewDate),1),12);
+const dayEntry=d=>LOG[d]||(LOG[d]={});
+document.addEventListener("click",ev=>{
+  const b=ev.target.closest("button"); if(!b||b.disabled) return;
+  if(b.id==="prev"){viewDate=addDays(viewDate,-1);render();return}
+  if(b.id==="next"){viewDate=addDays(viewDate,1);render();return}
+  if(b.id==="refresh"){fetchVerified(true);return}
+  if(b.id==="leave"){const d=viewDate,was=!!LOG[d]?.leave;mutate(()=>{const e=dayEntry(d);if(e.leave)delete e.leave;else e.leave=true},was?"已取消请假":"已记为请假，好好休息");return}
+  if(b.dataset.open){openForm(b.dataset.open);return}
+  if(b.dataset.copy){copyRequest(b.dataset.copy);return}
+  if(b.dataset.wd){const key=b.dataset.wd;mutate(()=>{delete SUB[key]},"已撤回提交");return}
+  if(b.dataset.c){const id=b.dataset.c,d=viewDate,was=!!LOG[d]?.[id];
+    mutate(()=>{const e=dayEntry(d);e[id]=!e[id]},was?null:"+"+rulesFor(d).find(t=>t.id===id).coin+" 🪙");return}
+  if(b.dataset.w){const id=b.dataset.w,w=curWeek(),had=!!WK[w]?.[id];
+    mutate(()=>{const e=WK[w]||(WK[w]={});if(e[id])delete e[id];else e[id]=true},had?"已取消":"周任务已完成");return}
+  if(b.dataset.xadd){const id=b.dataset.xadd,w=Math.min(Math.max(weekOf(todayStr()),1),12);if(EX[id])return;
+    mutate(()=>{EX[id]={week:w,at:Date.now()};if(WK[w]?.no)delete WK[w].no},`已加入拓展任务 ${id}，在本周任务里查看`);return}
+  if(b.dataset.xno){const w=+b.dataset.xno;mutate(()=>{(WK[w]||(WK[w]={})).no=true},null);return}
+  if(b.dataset.mv){const id=b.dataset.mv,x=EX[id];if(!x||VE[id]||x.week>=12)return;const to=x.week+1;
+    mutate(()=>{EX[id]={week:to,at:x.at||Date.now(),movedFrom:x.week}},`${id} 已顺延到第 ${to} 周`);return}
+  if(b.dataset.real){const r=b.dataset.real;mutate(()=>{const o=S.real[r]||(S.real[r]={});o.done=true;syncPro()},"已记为兑现，好好享受！");return}
+  if(b.dataset.buy){const it=LOOKS.find(i=>i.id===b.dataset.buy);if(compute().coins<it.price)return;
+    mutate(()=>{S.spent+=it.price;S.owned.push(it.id);S.look=it.id;syncPro()},`解锁新造型「${it.name}」`);return}
+  if(b.dataset.eq){const it=LOOKS.find(i=>i.id===b.dataset.eq);mutate(()=>{S.look=it.id;syncPro()},`换上「${it.name}」`);return}
+});
+document.addEventListener("change",ev=>{
+  const id=ev.target.id||"";
+  const r=id.match(/^rt-(\w+)$/);
+  if(r){const o=S.real[r[1]]||(S.real[r[1]]={});o.text=ev.target.value.slice(0,60);syncPro();saveLocal();toast("奖励已记下");return}
+  const m=id.match(/^in-(\w+)$/); if(!m||!planReady) return;
+  const d=viewDate,t=rulesFor(d).find(x=>x.id===m[1]); const v=Math.max(0,Math.min(100000,parseInt(ev.target.value,10)||0));
+  const was=done(t,LOG[d],d);
+  mutate(()=>{dayEntry(d)[t.id]=v},(!was&&v>=t.goal)?`达标！+${t.coin} 🪙`:(v<t.goal?`还差 ${t.goal-v} ${t.unit}达标`:null));
+});
+
+/* ---------- 导出给 Grok 版（格式 quest12-checkins/v1，和原冒险岛一样） ---------- */
+function buildExport(){
+  const c=compute(), days={};
+  const allDays=[...new Set([...Object.keys(S.log),...Object.keys(VD)])].sort();
+  for(const d of allDays){const e=S.log[d]||{}, rules=rulesFor(d);
+    const tasks={};
+    for(const t of rules){tasks[t.id]=t.kind==="v"?{submitted:!!subOf("d_"+d),verified:VD[d]||null,done:!!VD[d]}:{value:e[t.id]??null,done:done(t,e,d)}}
+    if(d>=REV) for(const t of LEGACY_EXTRA) if(e[t.id]!=null) tasks[t.id]={value:e[t.id],done:done(t,e,d),legacy:true};
+    days[d]={week:weekOf(d),rules:d<REV?"old":"new",tasks,fullAttendance:dayFull(d),leave:isLeave(d)}}
+  const weeks={};
+  for(let w=1;w<=12;w++){const e=S.weekly[w]||{}, o={};
+    for(const t of WEEKLY){o[t.id]=t.who==="claude"?{submitted:!!subOf("w"+w+"_"+t.id),verified:claudeOK(t.id,w)||null,done:!!claudeOK(t.id,w)}:{done:!!e[t.id]}}
+    o.extra=(S.extra[w]||[]).map(id=>({id,title:extraOf(id)?.t||"",submitted:!!subOf("x_"+id),verified:VE[id]||null,done:!!VE[id]}));
+    o.bossDefeated=!!(WEEKS[w-1].boss&&V[w]&&VG[w]);
+    if(Object.values(o).some(v=>v&&(v.done||v.submitted||(Array.isArray(v)&&v.length))))weeks[w]=o}
+  return {schema:"quest12-checkins/v1",exportedAt:new Date().toISOString(),timezone:"Asia/Shanghai",
+    plan:{start:START,end:"2027-01-31",revisionDate:REV,version:PLAN_VERSION,
+      rules:{daily:DAILY.map(t=>({id:t.id,name:t.name,kind:{t:"count",c:"check",v:"verify"}[t.kind],goal:t.goal||null,coin:t.coin,stat:t.stat,how:t.meta})),
+        weekly:WEEKLY.map(t=>({id:t.id,name:t.name,coin:t.coin,bossCoin:t.boss?t.coin*2:t.coin,stat:t.stat,verify:t.who==="claude",optional:!!t.opt})),
+        fullAttendanceBonus:15,streak7Bonus:60,extraCoin:EXTRA_COIN,levels:LEVELS,titles:TITLES,bossWeeks:[4,8,12]},
+      weeks:WEEKS.map((w,i)=>({week:i+1,title:w.t,dates:w.d,boss:!!w.boss,holiday:w.hol||null,deliver:w.del,video:w.v,english:w.e,
+        cc:CC[i],git:GIT[i],gpt:GPT[i],gem:GEM[i],grok:GROK[i],days:DAYS[i].map((d,j)=>({weekday:j+1,task:d.t,how:d.s,proof:d.p||null}))})),
+      extraPool:EXTRA, skills:null, works:null, changelog:null},
+    totals:{coins:c.coins,xp:c.xp,spent:S.spent,level:c.lv,title:TITLES[c.lv-1],streak:c.streak,maxStreak:c.maxRun,stats:c.stats,cards:c.cards,bossWeeks:c.bossW},
+    wardrobe:{owned:S.owned,current:S.look},days,weeks};
+}
+function download(name,obj){
+  const blob=new Blob([JSON.stringify(obj,null,2)],{type:"application/json"});const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
+}
+document.getElementById("exportBtn").addEventListener("click",()=>{if(!planReady)return;download("quest12-checkins.json",buildExport());toast("已导出 quest12-checkins.json，发给 Grok 版导入")});
+document.getElementById("backupBtn").addEventListener("click",()=>{download("冒险岛备份-"+todayStr()+".json",{schema:"quest-island-backup/v1",exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO});toast("已导出备份文件，换手机时导入它")});
+document.getElementById("restoreFile").addEventListener("change",ev=>{
+  const f=ev.target.files[0];ev.target.value="";if(!f)return;
+  f.text().then(t=>{let d;try{d=JSON.parse(t)}catch(e){toast("文件读不出来，不是备份文件");return}
+    if(!d||d.schema!=="quest-island-backup/v1"){toast("这不是冒险岛备份文件");return}
+    const n=Object.keys(LOG).length;
+    if(n&&!confirmRestore(n))return;
+    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
+  });
+});
+function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 天的打卡，导入备份会整体替换它们。确定吗？`)}
+
+/* ---------- 读取计划和验收清单 ---------- */
+function loading(msg){document.getElementById("tasks").innerHTML=`<div class="note" style="padding:12px 0">${esc(msg)}</div>`}
+async function getJSON(url){const r=await fetch(url+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.json()}
+async function fetchPlan(){
+  try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
+    document.getElementById("planver").textContent=PLAN_VERSION?" · 计划 "+PLAN_VERSION:"";}
+  catch(e){planReady=false;loading("计划读不出来。联网后刷新一次就会存进手机，之后断网也能打开。")}
+}
+let lastPass=null;
+async function fetchVerified(manual){
+  try{const d=await getJSON("verified.json");const before=planReady?compute().coins:0;VER=d.items||{};derive();
+    if(planReady){render();const after=compute().coins;
+      if(lastPass!==null&&after>before)toast(`Claude 已验收，+${after-before} 🪙`);else if(manual)toast(d.updatedAt?"验收清单已更新到 "+d.updatedAt.slice(5,16).replace("T"," "):"已刷新")}
+    lastPass=after_();}
+  catch(e){if(manual)toast("没连上网，验收结果先用上次的")}
+}
+const after_=()=>planReady?compute().coins:0;
+(async()=>{
+  loadLocal();
+  if(!storageOK) toast("这个浏览器不让存数据（可能是无痕模式），打卡会丢");
+  loading("读取计划中…");
+  await fetchPlan();
+  await fetchVerified(false);
+  derive();if(planReady)render();
+  setSave(storageOK?"数据存在本机":"未能存在本机");
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")fetchVerified(false)});
+  if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
+})();
+
+</script>
+</body>
+</html>
