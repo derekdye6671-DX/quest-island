@@ -43,3 +43,7 @@
 | 1366 桌面 | [前](before-1366-adventure.png) | [后](after-1366-adventure.png) |
 
 回退时只撤销 P2 提交；不重置本机记录，不更改业务数据。P1 与 P2 分别审核；不要混入其他奖励图库 PR。
+
+## 两批兼容性检查
+
+用 Git merge-tree 在临时目录组合 P1/P2，未产生冲突；未向 main 创建合并。对临时组合文件运行完整 P1、P2 验证（各 40 组布局检查）及 P0 核心操作回归，全部通过。详见 [兼容性结果](integration-results.json)。

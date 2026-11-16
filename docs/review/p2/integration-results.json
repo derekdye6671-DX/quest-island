@@ -1,0 +1,25 @@
+{
+  "p1_commit": "d61c33f",
+  "p2_application_commit": "685c0a0",
+  "temporary_combined_tree": "b1486a7f21973f50f0355a01e53932bbf8d1193b",
+  "merge_conflicts": false,
+  "p1_suite": [
+    "PASS: empty and full 84-day fixtures preserve compute(), rewards and export versus P0",
+    "PASS: locked images absent; l16 has no viewer; Esc/backdrop/close, focus return and re-render fallback; view does not mutate storage/coins",
+    "PASS: purchase/equip preserved; 23 permitted collection viewers work; l16 excluded",
+    "PASS: thumbnail and modal network failure/retry; no page errors",
+    "PASS: 40 P1 layout checks (5 sizes, 2 themes, 4 tabs), modal fits viewport and traps keyboard focus",
+    "PASS: previously viewed original image and viewer work after offline reload",
+    "PASS: business JSON, SW, manifest and existing JPG byte-identical to P0"
+  ],
+  "p2_suite": [
+    "PASS: empty/full 84-day snapshots match P0 totals, task rules, rewards and export",
+    "PASS: past incomplete != completed, complete uses actual required count; current chapter open, 12 chapters/84 days, Boss 4/8/12; jump preserves storage",
+    "PASS: first load/re-render/unchanged refresh do not celebrate; new Boss8 and real-verdict upgrade each trigger once inside celebrate; no new storage fields; reduced-motion respected",
+    "PASS: 40 after-layout checks across five viewports and both themes; before/after screenshots captured",
+    "PASS: offline reload still renders all 12 chapters",
+    "PASS: plan/verified JSON, SW, manifest and original runtime JPG byte-identical to P0"
+  ],
+  "p0_core_regression": "PASS: check/cancel, reload persistence, count threshold, leave, date limits, verdict pending/fail/pass, backup/export, restore cancel/confirm",
+  "scope": "Temporary combined filesystem only; no integration commit, merge or change to main"
+}
