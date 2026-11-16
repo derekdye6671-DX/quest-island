@@ -6,6 +6,7 @@
   "PASS: 40 P1 layout checks (5 sizes, 2 themes, 4 tabs), modal fits viewport and traps keyboard focus",
   "PASS: previously viewed original image and viewer work after offline reload",
   "PASS: business JSON, SW, manifest and existing JPG byte-identical to P0",
-  "PASS: Claude revision display matrix — open/unowned ordinary thumbnail without data-view; owned l2 viewer; future/unowned and hidden l16 no image; clicking ordinary thumbnail does not mutate storage/coins",
-  "PASS: assets/originals removed from revised P1 tree"
+  "PASS: Claude revision display matrix — open/unowned ordinary thumbnail without data-view; owned l2 viewer; future/unowned and locked hidden l16 no image; clicking ordinary thumbnail does not mutate storage/coins",
+  "PASS: assets/originals removed from revised P1 tree",
+  "PASS: P1 second review — 8/8 cards renders loaded look-16.jpg thumbnail, no data-view; clicking it leaves viewer closed and storage/coins unchanged; locked/owned/open/future cases checked (test_l16.py)"
 ]

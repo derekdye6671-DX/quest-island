@@ -923,8 +923,8 @@ function render(){
     else if(i.auto){const have=i.id==="l13"?c.fitDays:i.id==="l14"?c.engDays:c.extrasDone, need=i.id==="l15"?5:30;btn=`<button disabled>${i.cond}${have} / ${need}</button>`;lock="达成条件解锁"}
     else if(!open){btn=`<button disabled>🪙 ${i.price}</button>`;lock=`第 ${i.wk} 周开放`}
     else btn=`<button data-buy="${i.id}" ${c.coins>=i.price&&canWrite?"":"disabled"}>🪙 ${i.price}</button>`;
-    const show=!i.hidden&&(own||open);
-    return `<div class="item ${show?"":"locked"}"><div class="ph">${show?(own?imagePreview(i.id,i.name,"wardrobe"):imgTag(i.id,"",i.name)):imagePlaceholder(i.hidden?"隐藏造型":"解锁后可查看")}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
+    const show=own||(!i.hidden&&open);
+    return `<div class="item ${show?"":"locked"}"><div class="ph">${show?(own&&!i.hidden?imagePreview(i.id,i.name,"wardrobe"):imgTag(i.id,"",i.name)):imagePlaceholder(i.hidden?"隐藏造型":"解锁后可查看")}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
   }).join("");
 
   // real rewards
