@@ -65,7 +65,7 @@ h2{font-size:21px}
 .panel>h2 small{font-family:var(--f-body);font-size:12px;color:var(--muted)}
 /* hero */
 .stage{border-radius:10px;overflow:hidden;border:1px solid var(--line)}
-.stage{aspect-ratio:3/4;background:var(--bg)}
+.stage{aspect-ratio:9/16;background:var(--bg)}
 @media (max-width:820px){
   .herop{display:grid;grid-template-columns:40% minmax(0,1fr);column-gap:14px;align-content:start}
   .herop .stage{grid-row:1 / span 6;align-self:start}
@@ -124,12 +124,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--xp);outline-off
 .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .tabs button{font:inherit;font-size:13px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:5px 12px;border-radius:999px;cursor:pointer}
 .tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
+@media (min-width:620px){.shop{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}}
 .item{border:1px solid var(--line);border-radius:12px;padding:10px;display:grid;gap:6px;text-align:center}
-.item .ph{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:3/4;background:var(--bg)}
+.item .ph{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:9/16;background:var(--bg)}
 .item .ph img{width:100%;height:100%;object-fit:cover;display:block}
 .item.locked .ph img{filter:grayscale(1) brightness(.3) blur(6px);transform:scale(1.1)}
-.item .lk{position:absolute;inset:auto 0 10px;color:#fff;font-size:13px;font-weight:600}
+.item .lk{position:absolute;inset:auto 0 10px;color:#fff;font-size:12px;font-weight:600;padding:0 4px}
 .item .d{font-size:11px;color:var(--muted)}
 .item .n{font-weight:600;font-size:14px}
 .item button{font:inherit;font-size:13px;font-weight:600;border:0;border-radius:8px;padding:7px;cursor:pointer;background:var(--gold);color:#fff}
@@ -153,9 +154,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--xp);outline-off
 .rules b{display:block;margin-bottom:2px}
 .hero-name{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;font-size:13px;color:var(--muted)}
 .hero-name b{font-family:var(--f-display);font-weight:400;font-size:17px;color:var(--ink)}
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:10px}
 .card{border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg);display:grid}
-.card img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.card img{display:block;width:100%;aspect-ratio:9/16;object-fit:cover}
 .card .cap{padding:8px 10px;font-size:12px;display:grid;gap:2px}
 .card .cap b{font-size:13px}
 .card.locked img{filter:grayscale(1) brightness(.25) blur(6px)}
@@ -164,7 +165,7 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--xp);outline-off
 .ov[hidden]{display:none}
 .ov{position:fixed;inset:0;background:rgba(10,14,20,.72);display:grid;place-items:center;z-index:30;padding:16px}
 .ov-box{background:var(--panel);border-radius:18px;max-width:340px;width:100%;overflow:hidden;text-align:center;animation:pop .5s cubic-bezier(.2,1.4,.4,1)}
-.ov-box img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}
+.ov-box img{display:block;width:100%;aspect-ratio:9/16;max-height:62vh;object-fit:cover;object-position:top}
 .ov-box .t{font-family:var(--f-display);font-size:26px;color:var(--gold);margin-top:10px}
 .ov-box p{margin:4px 16px 0;color:var(--muted);font-size:13px}
 .ov-box button{margin:14px 16px 16px;width:calc(100% - 32px);font:inherit;font-weight:600;border:0;border-radius:10px;padding:10px;background:var(--xp);color:#fff;cursor:pointer}
@@ -205,11 +206,6 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
 .badge.lock{background:var(--bg);color:var(--muted)}
 .badge.ready{background:var(--gold-soft);color:var(--gold);border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
 .badge.got{background:var(--ok-soft);color:var(--ok)}
-.art{display:grid;place-items:center;width:100%;height:100%;aspect-ratio:3/4;font-size:64px;color:#fff;background:linear-gradient(160deg,var(--a1),var(--a2))}
-.ov-box .art{font-size:96px}
-.art-l1{--a1:#F2A65A;--a2:#6A4C93}.art-l2{--a1:#8EA9C1;--a2:#3D5A80}.art-l3{--a1:#2B2D42;--a2:#8D99AE}.art-l4{--a1:#9D0208;--a2:#F48C06}
-.art-l5{--a1:#7209B7;--a2:#4CC9F0}.art-l6{--a1:#22223B;--a2:#C9ADA7}.art-l7{--a1:#FF7B54;--a2:#FFD56F}.art-l8{--a1:#111;--a2:#5E548E}
-.item.locked .art{filter:grayscale(1) brightness(.4)}.card.locked .art{filter:grayscale(1) brightness(.3)}
 .vnote.ok{background:var(--ok-soft);color:var(--ok)}
 .vnote.bad{background:var(--gold-soft);color:var(--warn)}
 .task .vnote{margin-top:6px;font-size:12px;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--muted)}
@@ -392,26 +388,34 @@ const TITLES = ["新手村民","见习冒险者","晨练学徒","剪辑新秀","
 let WEEKS=[],CC=[],GIT=[],GPT=[],GEM=[],GROK=[],DAYS=[],EXTRA=[],PLAN_VERSION="";
 const EXTRA_COIN = 60;
 const LOOKS = [
-  {id:"l1", name:"城市初见",   desc:"白衬衫 · 傍晚街头", price:0},
-  {id:"l2", name:"雨天风衣",   desc:"驼色风衣 · 雨中斑马线", price:300},
-  {id:"l3", name:"夜色皮衣",   desc:"皮夹克长靴 · 城市夜景", price:500, lv:2},
-  {id:"l4", name:"酒红西装",   desc:"西装套装 · 黄昏办公室", price:900, lv:4},
-  {id:"l5", name:"霓虹机能",   desc:"机能风 · 霓虹街道", price:1200, lv:5},
-  {id:"l6", name:"午夜晚礼服", desc:"长礼服 · 酒店旋转楼梯", price:1500, lv:7},
-  {id:"l7", name:"海岸落日",   desc:"亚麻套装 · 红色跑车", price:2000, lv:9},
-  {id:"l8", name:"午夜特工",   desc:"特典 · 集齐 8/8 图鉴解锁", hidden:true}
+  {id:"l1",  name:"海岛启程",   desc:"轻盈休闲 · 海岛清晨", price:0, wk:1},
+  {id:"l2",  name:"书房初探",   desc:"温柔针织 · 暖色书房", price:300, wk:2},
+  {id:"l3",  name:"表格魔法",   desc:"干练衬衫 · 悬浮图表", price:400, wk:3},
+  {id:"l4",  name:"汇报女王",   desc:"西装气场 · Boss 周", price:600, wk:4},
+  {id:"l5",  name:"屋顶上线",   desc:"都市摇滚 · 屋顶夜景", price:500, wk:5},
+  {id:"l6",  name:"符文法师",   desc:"神秘幻想 · 符文卡片", price:600, wk:6},
+  {id:"l7",  name:"圣诞看板",   desc:"节庆丝绒 · 看板墙", price:700, wk:7},
+  {id:"l8",  name:"跨年烟火",   desc:"晚宴盛装 · Boss 周", price:900, wk:8},
+  {id:"l9",  name:"齿轮工坊",   desc:"机能工业 · 机器人", price:800, wk:9},
+  {id:"l10", name:"群岛之桥",   desc:"复古飞行 · 海桥", price:900, wk:10},
+  {id:"l11", name:"作品展台",   desc:"画廊都会 · 个人展台", price:1000, wk:11},
+  {id:"l12", name:"山顶日出",   desc:"冒险终章 · Boss 周", price:1200, wk:12},
+  {id:"l13", name:"晨练达人",   desc:"晨练累计 30 天自动解锁", auto:x=>x.fitDays>=30, cond:"晨练 "},
+  {id:"l14", name:"英语旅人",   desc:"英语累计 30 天自动解锁", auto:x=>x.engDays>=30, cond:"英语 "},
+  {id:"l15", name:"拓展探险家", desc:"完成 5 个拓展任务自动解锁", auto:x=>x.extrasDone>=5, cond:"拓展 "},
+  {id:"l16", name:"午夜特工",   desc:"隐藏款 · 集齐 8/8 图鉴解锁", hidden:true}
 ];
 const LEGACY = {cap:120,phones:300,wizard:900,crown:2200,track:200,hoodie:450,cape:1200,staff:1100,robot:800,dragon:1600,stars:1000,
   shades:150,earrings:200,beret:400,fedora:900,trench:300,leather:500,suit:900,tech:1200,gown:1500,coffee:100,mic:250,camera:600,laptop:900,cat:350,dog:800,drone:1500,city:400,neon:700,sunset:1000,car:2000};
 const CARDS = [
-  {id:"c1", name:"第一次全勤", hint:"任意一天应做项全部完成", look:"l1", ok:x=>x.maxRun>=1},
-  {id:"c2", name:"首条视频", hint:"完成一次「发一条视频」", look:"l3", ok:x=>x.pubs>=1},
-  {id:"c3", name:"七日连击", hint:"连续 7 天全勤", look:"l5", ok:x=>x.maxRun>=7},
-  {id:"c4", name:"第一个 Boss", hint:"通过第 4 周 Boss（两关都过）", look:"l4", ok:x=>x.bossW.includes(4)},
-  {id:"c5", name:"晋升 LV5", hint:"等级达到 5", look:"l2", ok:x=>x.lv>=5},
-  {id:"c6", name:"二十一天习惯", hint:"连续 21 天全勤", look:"l7", ok:x=>x.maxRun>=21},
-  {id:"c7", name:"晋升 LV10", hint:"等级达到 10", look:"l6", ok:x=>x.lv>=10},
-  {id:"c8", name:"十二周通关", hint:"通过第 12 周 Boss（两关都过）", look:"l8", ok:x=>x.bossW.includes(12)}
+  {id:"c1", name:"第一次全勤", hint:"任意一天应做项全部完成", ok:x=>x.maxRun>=1},
+  {id:"c2", name:"首条视频", hint:"完成一次「发一条视频」", ok:x=>x.pubs>=1},
+  {id:"c3", name:"七日连击", hint:"连续 7 天全勤", ok:x=>x.maxRun>=7},
+  {id:"c4", name:"第一个 Boss", hint:"通过第 4 周 Boss（两关都过）", ok:x=>x.bossW.includes(4)},
+  {id:"c5", name:"晋升 LV5", hint:"等级达到 5", ok:x=>x.lv>=5},
+  {id:"c6", name:"二十一天", hint:"连续 21 天全勤", ok:x=>x.maxRun>=21},
+  {id:"c7", name:"晋升 LV10", hint:"等级达到 10", ok:x=>x.lv>=10},
+  {id:"c8", name:"十二周通关", hint:"通过第 12 周 Boss（两关都过）", ok:x=>x.bossW.includes(12)}
 ];
 const REAL = [
   {id:"lv3",  name:"升到 LV3",  hint:"小奖励", ok:x=>x.lv>=3},
@@ -557,13 +561,15 @@ function compute(){
   const pubs=Object.values(S.weekly).filter(e=>e&&e.pub).length;
   const lastFull=dayFull(todayStr())||dayFull(addDays(todayStr(),-1));
   const mood=streak>=7?"star":streak>=1?"smile":(Object.keys(S.log).length&&!lastFull?"sad":"calm");
-  const out={xp, coins:coins-S.spent, stats, lv:lv+1, streak, maxRun, pubs, bossW, boss:bossW.length, mood};
+  const cnt=id=>Object.keys(S.log).filter(d=>{const t=rulesFor(d).find(r=>r.id===id);return t&&done(t,S.log[d],d)}).length;
+  const out={xp, coins:coins-S.spent, stats, lv:lv+1, streak, maxRun, pubs, bossW, boss:bossW.length, mood, fitDays:cnt("fit"), engDays:cnt("eng"), extrasDone:Object.keys(VE).length};
   out.cards=CARDS.filter(k=>k.ok(out)).map(k=>k.id);
+  out.autos=LOOKS.filter(i=>i.auto&&i.auto(out)).map(i=>i.id);
   return out;
 }
 
-const ART={l1:"🌆",l2:"☔",l3:"🌃",l4:"🍷",l5:"🌈",l6:"✨",l7:"🌅",l8:"🕶️"};
-function imgTag(id,cls,alt){return `<div class="art art-${id} ${cls||""}" role="img" aria-label="${esc(alt||"")}"><span>${ART[id]||"⭐"}</span></div>`}
+const IMG=id=>id[0]==="c"?`img/card-${id.slice(1)}.jpg`:`img/look-${id.slice(1).padStart(2,"0")}.jpg`;
+function imgTag(id,cls,alt){return `<img src="${IMG(id)}" alt="${esc(alt||"")}" class="${cls||""}" loading="lazy" decoding="async">`}
 function extraCards(w){
   return (S.extra[w]||[]).map(id=>{const T=extraOf(id);if(!T)return "";const v=VE[id];
     const mv=!v&&w<12?`<button class="ghost" data-mv="${id}" ${canWrite?"":"disabled"}>顺延到第 ${w+1} 周</button>`:"";
@@ -591,7 +597,7 @@ function render(){
   document.getElementById("mood").textContent={star:"✨ 状态爆棚",smile:"🙂 状态不错",calm:"等待第一次打卡",sad:"😟 昨天没全勤…"}[c.mood];
   document.getElementById("galcount").textContent=`已收集 ${c.cards.length} / ${CARDS.length}，集齐 8/8 解锁特典「午夜特工」`;
   document.getElementById("gallery").innerHTML=CARDS.map(k=>{const on=c.cards.includes(k.id);
-    return `<div class="card ${on?"":"locked"}">${imgTag(k.look)}<div class="cap"><b>${on?k.name:"？？？"}</b><span>${k.hint}</span></div></div>`}).join("");
+    return `<div class="card ${on?"":"locked"}">${imgTag(k.id,"",on?k.name:"未解锁图鉴")}<div class="cap"><b>${on?k.name:"？？？"}</b><span>${k.hint}</span></div></div>`}).join("");
   const lvIdx=c.lv-1, cur=LEVELS[lvIdx], nxt=LEVELS[lvIdx+1];
   document.getElementById("ltitle").textContent=TITLES[lvIdx];
   document.getElementById("lnum").textContent="LV "+c.lv;
@@ -651,16 +657,19 @@ function render(){
 
   // shop
   const all=c.cards.length===CARDS.length;
+  const wkNow=Math.min(Math.max(weekOf(todayStr()),1),12);
   document.getElementById("shop").innerHTML=LOOKS.map(i=>{
-    const own=i.id==="l1"||S.owned.includes(i.id), worn=L.id===i.id, lvOK=i.hidden?all:(!i.lv||c.lv>=i.lv);
+    const auto=!!(i.auto&&c.autos.includes(i.id)), own=i.price===0||S.owned.includes(i.id)||auto||(i.hidden&&all), worn=L.id===i.id;
+    const open=i.wk?wkNow>=i.wk:false;
     let btn, lock="";
     if(worn) btn=`<button class="worn" disabled>当前造型</button>`;
-    else if(own) btn=`<button class="eq" data-eq="${i.id}">换上</button>`;
-    else if(i.hidden){btn=`<button disabled>集齐图鉴解锁</button>`;lock="特典"}
-    else if(!lvOK){btn=`<button disabled>🪙 ${i.price}</button>`;lock=`LV ${i.lv} 解锁`}
+    else if(own) btn=`<button class="eq" data-eq="${i.id}" ${canWrite?"":"disabled"}>换上</button>`;
+    else if(i.hidden){btn=`<button disabled>集齐图鉴解锁</button>`;lock="隐藏款"}
+    else if(i.auto){const have=i.id==="l13"?c.fitDays:i.id==="l14"?c.engDays:c.extrasDone, need=i.id==="l15"?5:30;btn=`<button disabled>${i.cond}${have} / ${need}</button>`;lock="达成条件解锁"}
+    else if(!open){btn=`<button disabled>🪙 ${i.price}</button>`;lock=`第 ${i.wk} 周开放`}
     else btn=`<button data-buy="${i.id}" ${c.coins>=i.price&&canWrite?"":"disabled"}>🪙 ${i.price}</button>`;
-    const show=own||(!i.hidden&&lvOK);
-    return `<div class="item ${show?"":"locked"}"><div class="ph">${imgTag(i.id,"",i.name)}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
+    const show=own||(!i.hidden&&open);
+    return `<div class="item ${show?"":"locked"}"><div class="ph">${imgTag(i.id,"",show?i.name:"未解锁造型")}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
   }).join("");
 
   // real rewards
@@ -693,11 +702,13 @@ function render(){
 function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600)}
 function overlay(look,title,text){document.getElementById("ovart").innerHTML=imgTag(look);document.getElementById("ovt").textContent=title;document.getElementById("ovp").textContent=text;document.getElementById("ov").hidden=false;document.getElementById("ovclose").focus()}
 function celebrate(before,msg){let after=compute();
-  if(after.cards.length===CARDS.length&&!S.owned.includes("l8")){PRO.owned=S.owned.concat("l8");saveLocal();derive();after=compute()}
+  if(after.cards.length===CARDS.length&&!S.owned.includes("l16")){PRO.owned=S.owned.concat("l16");saveLocal();derive();after=compute()}
   render();
   const newCard=CARDS.find(k=>after.cards.includes(k.id)&&!before.cards.includes(k.id));
-  if(newCard) overlay(newCard.look,"解锁图鉴！",`「${newCard.name}」已收入图鉴`+(after.cards.length===CARDS.length?"，特典「午夜特工」已解锁":""));
-  else if(after.lv>before.lv){const nl=LOOKS.find(x=>x.lv===after.lv);overlay(nl?nl.id:(S.look||"l1"),`LV ${after.lv} 升级！`,`新称号「${TITLES[after.lv-1]}」`+(nl?`，新造型「${nl.name}」可以购买了`:"")+(after.lv%3===0?"。记得兑现现实奖励！":""))}
+  const newAuto=LOOKS.find(i=>after.autos.includes(i.id)&&!before.autos.includes(i.id));
+  if(newCard) overlay(newCard.id,"解锁图鉴！",`「${newCard.name}」已收入图鉴`+(after.cards.length===CARDS.length?"，特典「午夜特工」已解锁":""));
+  else if(newAuto) overlay(newAuto.id,"解锁新造型！",`「${newAuto.name}」已放进衣橱，去换上吧`);
+  else if(after.lv>before.lv){overlay(S.look||"l1",`LV ${after.lv} 升级！`,`新称号「${TITLES[after.lv-1]}」`+(after.lv%3===0?"。记得兑现现实奖励！":""))}
   else if(msg) toast(msg)}
 /* 先改本机数据，存好，再刷新画面 */
 function mutate(fn,msg){if(!planReady)return;const before=compute();fn();saveLocal();derive();celebrate(before,msg)}
