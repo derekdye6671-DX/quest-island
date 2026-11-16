@@ -234,6 +234,9 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .wcard button:not(.on):not(.pend):not(.ghost):not(.xbtn){background:var(--brand);color:var(--brand-ink)}
 .wcard button.pend{background:var(--pend-soft);color:var(--pend)}
 .vok{color:var(--ok)}
+.pgroup{margin-top:14px;display:grid;gap:10px}
+.ptitle{font-weight:700;color:var(--brand)}
+.wcard.pcard{border-color:var(--brand)}
 @media (max-width:820px){.todayp{order:-1}}
 @media (max-width:620px){#subline{display:none}h1{font-size:22px}}
 .toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
@@ -295,6 +298,7 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
     <h2>本周任务 <small id="wklabel"></small></h2>
     <div id="extraBox"></div>
     <div class="wk" id="weekly"></div>
+    <div id="prodBox"></div>
   </section>
 
   <section class="panel" data-tab="collect">
@@ -367,7 +371,7 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
       <div><b>👑 周任务</b>Claude Code 关 +100、GitHub 关 +80；第 4、8、12 周是 Boss 周，两关奖励翻倍，两关都过才算打败 Boss。</div>
       <div><b>🤖 指定模型交付</b>ChatGPT、Gemini、Grok 每周各一个具体任务，要交出可保存的文件或截图，各 +25。</div>
       <div><b>🔍 验收</b>所有验收类任务（主技术块、Claude Code 关、GitHub 关、ChatGPT / Gemini / Grok 交付）都由 Claude 确认：按任务里写的「验收证明」发给 Claude，确认后才发金币。</div>
-      <div><b>🚀 提前完成就加任务</b>本周 Claude Code 关和 GitHub 关都验收通过后，页面会问你要不要再加一个本周任务。点「是」立刻领到下一个拓展任务（按顺序，领第一个已到周次的，+60），做完验收后还能继续领，不用等下周。</div>
+      <div><b>🎯 产品任务优先</b>产品相关任务按顺序做：E33 小红书调研 → 第 5 周产品化第一步 → 第 7 周大纲、定价、合规 → 第 10 周接入 AI → 第 11 周收尾。每完成一项，页面会问要不要把下一项提前到本周；提前后原来那一周留作缓冲。产品任务全部做完之前，拓展任务暂停发放。每周的 Claude Code 关、GitHub 关照常做。</div>
       <div><b>🧩 任务都是具体的</b>每个任务都写了具体步骤、交付物和验收证明。照着步骤做，每一步都对应一个要学会的实际操作。</div>
       <div><b>🎬 视频可选</b>主题是「没有计算机背景的普通打工人用 AI 做事」，12 周建议 4–6 条。不做视频不影响全勤，也不挡技术关。</div>
       <div><b>🎄 节日周</b>第 7、8 周跨圣诞和元旦，视频可停，技术关不取消，周末实战块可以放到假期，截止仍是当周最后一天。</div>
@@ -499,18 +503,18 @@ function weeklyOK(t,w){const e=S.weekly[w]||{};if(t.who==="claude")return !!clau
    verified.json  验收清单，放在仓库里，Claude 验收后更新；只有任务编号和一句结论
    键：d_<日期>（主技术块）、w<周>_<任务>（周任务）、x_<编号>（拓展） */
 const KEY="quest-island-v1";
-let LOG={}, WK={}, EX={}, SUB={}, PRO={}, VER={};
+let LOG={}, WK={}, EX={}, SUB={}, PRO={}, VER={}, PR={}, PRODUCT=[];
 let S={log:{},weekly:{},owned:[],look:"l1",spent:0,real:{},extra:{},extraNo:{}};
 let V={}, VG={}, VD={}, VM={}, VE={};
 const claudeOK=(id,w)=>id==="quest"?V[w]:id==="git"?VG[w]:(VM[w]&&VM[w][id]);
 let canWrite=true, planReady=false, viewDate=todayStr(), storageOK=true;
 
 function loadLocal(){
-  try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{}}}
+  try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{}}}
   catch(e){storageOK=false}
 }
 function saveLocal(){
-  try{localStorage.setItem(KEY,JSON.stringify({v:1,log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,savedAt:Date.now()}));setSave("已保存在本机 ✓")}
+  try{localStorage.setItem(KEY,JSON.stringify({v:1,log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR,savedAt:Date.now()}));setSave("已保存在本机 ✓")}
   catch(e){storageOK=false;setSave("这台设备存不了数据，请导出备份");toast("这次没存上，请先导出备份")}
 }
 function setSave(txt){document.getElementById("savestate").textContent=txt}
@@ -615,8 +619,39 @@ function compute(){
 
 const IMG=id=>id[0]==="c"?`img/card-${id.slice(1)}.jpg`:`img/look-${id.slice(1).padStart(2,"0")}.jpg`;
 function imgTag(id,cls,alt){return `<img src="${IMG(id)}" alt="${esc(alt||"")}" class="${cls||""}" loading="lazy" decoding="async">`}
+/* ---------- 产品任务优先 ----------
+   产品任务按顺序做；做完一项就问要不要把下一项提前到本周；提前后原来那一周留作缓冲。
+   产品任务全部完成之前，不发拓展任务，已领但没验收的拓展任务先收起。 */
+const prodDone=p=>p.kind==="extra"?!!VE[p.ref]:p.keys.every(k=>claudeOK(k,p.week));
+const prodNext=()=>PRODUCT.find(p=>!prodDone(p));
+const prodRefs=()=>new Set(PRODUCT.filter(p=>p.kind==="extra").map(p=>p.ref));
+function ensureP1(){const now=Math.min(Math.max(weekOf(todayStr()),1),12);
+  for(const p of PRODUCT) if(p.kind==="extra"&&!EX[p.ref]&&now>=p.home){EX[p.ref]={week:now,at:Date.now(),product:true};return true}
+  return false}
+function prodCards(w){
+  const SRC={quest:CC,git:GIT,m_gpt:GPT,m_gem:GEM,m_grok:GROK};
+  return PRODUCT.filter(p=>p.kind!=="extra"&&PR[p.id]===w&&p.week!==w).map(p=>
+    `<div class="pgroup"><div class="ptitle">🎯 提前的产品任务 · 原第 ${p.week} 周：${esc(p.t)}</div><div class="wk">`+
+    p.keys.map(k=>{const t=WEEKLY.find(x=>x.id===k),T=SRC[k][p.week-1],v=claudeOK(k,p.week);
+      return `<div class="wcard pcard"><div><span style="font-size:20px">${t.ico}</span> <b>${t.name}</b> <span class="note">+${t.coin} 🪙</span></div>${taskBox(T,t.coin)}${subBlock("w"+p.week+"_"+k,!!v,"week",k,p.week,T.t,T.p)}</div>`}).join("")+`</div></div>`).join("");
+}
+function prodBanner(w){
+  const now=Math.min(Math.max(weekOf(todayStr()),1),12); if(w!==now) return "";
+  const out=[];
+  for(const p of PRODUCT) if(p.kind!=="extra"&&p.week===w&&PR[p.id]&&PR[p.id]<w) out.push(`<div class="xbar">🛟 本周的产品任务「${esc(p.t)}」已在第 ${PR[p.id]} 周提前做了，空出的时间留作缓冲：补落后的任务，或者好好休息。</div>`);
+  const n=prodNext();
+  if(!n) return out.join("")+extraBanner(w);
+  const idx=PRODUCT.indexOf(n), prev=idx>0?PRODUCT[idx-1]:null;
+  const nw=n.kind==="extra"?(EX[n.ref]?.week||n.home):(PR[n.id]||n.week);
+  if(nw<=w) out.push(`<div class="xbar">🎯 产品任务优先：本周在做「${esc(n.t)}」。做完后会问你要不要把下一项提前。拓展任务暂停发放。</div>`);
+  else if(prev&&!(WK[w]&&WK[w].pno)) out.push(`<div class="xbar strong">🎉 产品任务「${esc(prev.t)}」已完成！要把下一项提前到本周吗？<br><span class="note">下一项：第 ${n.week} 周「${esc(n.t)}」。提前后，第 ${n.week} 周空出来的时间留作缓冲。</span><span class="xrow"><button class="xbtn yes" data-pfwd="${n.id}">是，提前到本周</button><button class="xbtn" data-pno="${w}">暂不</button></span></div>`);
+  else out.push(`<div class="xbar">🎯 下一项产品任务在第 ${n.week} 周：「${esc(n.t)}」。${WK[w]&&WK[w].pno?`<button class="xbtn" data-pfwd="${n.id}">还是提前到本周</button>`:""}</div>`);
+  return out.join("");
+}
 function extraCards(w){
-  return (S.extra[w]||[]).map(id=>{const T=extraOf(id);if(!T)return "";const v=VE[id];
+  const hold=!!prodNext(), refs=prodRefs();
+  const hidden=(S.extra[w]||[]).filter(id=>hold&&!VE[id]&&!refs.has(id));
+  return (hidden.length?`<div class="wcard opt"><div class="q">已领的拓展任务 ${hidden.join("、")} 先收起，产品任务全部做完后再继续。</div></div>`:"")+(S.extra[w]||[]).filter(id=>!hidden.includes(id)).map(id=>{const T=extraOf(id);if(!T)return "";const v=VE[id];
     const mv=!v&&w<12?`<button class="ghost" data-mv="${id}" ${canWrite?"":"disabled"}>顺延到第 ${w+1} 周</button>`:"";
     return `<div class="wcard xcard"><div><span style="font-size:20px">🚀</span> <b>拓展 ${id} · ${esc(T.area)}</b> <span class="note">+${EXTRA_COIN} 🪙</span></div>${taskBox(T,EXTRA_COIN)}${subBlock("x_"+id,!!v,"extra",id,w,T.t,T.p)}${mv}</div>`}).join("");
 }
@@ -702,7 +737,8 @@ function render(){
     const on=!!we[t.id];
     return `<div class="wcard ${t.opt?"opt":""}">${head}<div class="q">${esc(desc[t.id])}</div><button data-w="${t.id}" class="${on?"on":""}" ${canWrite?"":"disabled"}>${on?"已完成 ✓":"完成"}</button></div>`;
   }).join("")+extraCards(w);
-  document.getElementById("extraBox").innerHTML=extraBanner(w);
+  document.getElementById("prodBox").innerHTML=prodCards(w);
+  document.getElementById("extraBox").innerHTML=PRODUCT.length?prodBanner(w):extraBanner(w);
 
   // shop
   const all=c.cards.length===CARDS.length;
@@ -780,6 +816,9 @@ document.addEventListener("click",ev=>{
     mutate(()=>{const e=WK[w]||(WK[w]={});if(e[id])delete e[id];else e[id]=true},had?"已取消":"周任务已完成");return}
   if(b.dataset.xadd){const id=b.dataset.xadd,w=Math.min(Math.max(weekOf(todayStr()),1),12);if(EX[id])return;
     mutate(()=>{EX[id]={week:w,at:Date.now()};if(WK[w]?.no)delete WK[w].no},`已加入拓展任务 ${id}，在本周任务里查看`);return}
+  if(b.dataset.pfwd){const p=PRODUCT.find(x=>x.id===b.dataset.pfwd),w=Math.min(Math.max(weekOf(todayStr()),1),12);if(!p||p.kind==="extra")return;
+    mutate(()=>{PR[p.id]=w;if(WK[w]?.pno)delete WK[w].pno},`已把「${p.t}」提前到第 ${w} 周，卡片在本周任务最下面`);return}
+  if(b.dataset.pno){const w=+b.dataset.pno;mutate(()=>{(WK[w]||(WK[w]={})).pno=true},null);return}
   if(b.dataset.xno){const w=+b.dataset.xno;mutate(()=>{(WK[w]||(WK[w]={})).no=true},null);return}
   if(b.dataset.mv){const id=b.dataset.mv,x=EX[id];if(!x||VE[id]||x.week>=12)return;const to=x.week+1;
     mutate(()=>{EX[id]={week:to,at:x.at||Date.now(),movedFrom:x.week}},`${id} 已顺延到第 ${to} 周`);return}
@@ -829,14 +868,14 @@ function download(name,obj){
   a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 }
 document.getElementById("exportBtn").addEventListener("click",()=>{if(!planReady)return;download("quest12-checkins.json",buildExport());toast("已导出 quest12-checkins.json，发给 Grok 版导入")});
-document.getElementById("backupBtn").addEventListener("click",()=>{download("冒险岛备份-"+todayStr()+".json",{schema:"quest-island-backup/v1",exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO});toast("已导出备份文件，换手机时导入它")});
+document.getElementById("backupBtn").addEventListener("click",()=>{download("冒险岛备份-"+todayStr()+".json",{schema:"quest-island-backup/v1",exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR});toast("已导出备份文件，换手机时导入它")});
 document.getElementById("restoreFile").addEventListener("change",ev=>{
   const f=ev.target.files[0];ev.target.value="";if(!f)return;
   f.text().then(t=>{let d;try{d=JSON.parse(t)}catch(e){toast("文件读不出来，不是备份文件");return}
     if(!d||d.schema!=="quest-island-backup/v1"){toast("这不是冒险岛备份文件");return}
     const n=Object.keys(LOG).length;
     if(n&&!confirmRestore(n))return;
-    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
+    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{};ensureP1();saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
   });
 });
 function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 天的打卡，导入备份会整体替换它们。确定吗？`)}
@@ -845,7 +884,7 @@ function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 
 function loading(msg){document.getElementById("tasks").innerHTML=`<div class="note" style="padding:12px 0">${esc(msg)}</div>`}
 async function getJSON(url){const r=await fetch(url+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.json()}
 async function fetchPlan(){
-  try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
+  try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);PRODUCT=P.PRODUCT||[];PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
     document.getElementById("planver").textContent=PLAN_VERSION?" · 计划 "+PLAN_VERSION:"";}
   catch(e){planReady=false;loading("计划读不出来。联网后刷新一次就会存进手机，之后断网也能打开。")}
 }
@@ -873,6 +912,7 @@ document.querySelector(".tabbar").addEventListener("click",ev=>{const b=ev.targe
   loading("读取计划中…");
   await fetchPlan();
   await fetchVerified(false);
+  if(planReady&&ensureP1())saveLocal();
   derive();if(planReady)render();
   setSave(storageOK?"数据存在本机":"未能存在本机");
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")fetchVerified(false)});
