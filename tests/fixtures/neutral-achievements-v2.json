@@ -1,0 +1,88 @@
+{
+  "schema": "quest-island-backup/v2",
+  "log": {
+    "2026-11-16": {
+      "diet": true
+    }
+  },
+  "wk": {},
+  "ex": {},
+  "sub": {},
+  "pro": {},
+  "rewards": {
+    "schema": "quest-island-rewards/v1",
+    "rev": 0,
+    "items": [
+      {
+        "id": "r_neutral_wardrobe",
+        "name": "中性衣橱 · 测试 <b>不是 HTML</b>",
+        "type": "wardrobe",
+        "price": 10,
+        "rule": {
+          "kind": "level",
+          "value": 1
+        },
+        "acquired": false,
+        "archived": false,
+        "image": {
+          "type": "image/png",
+          "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAALUlEQVR4nGPcee4yAy0BE01NH7Vg1IJRC0YtGLVg1IJRC0YtGLVg1IJRC6gIABBUAppYNHN/AAAAAElFTkSuQmCC"
+        }
+      },
+      {
+        "id": "r_neutral_codex",
+        "name": "中性收藏",
+        "type": "codex",
+        "price": 0,
+        "rule": {
+          "kind": "level",
+          "value": 1
+        },
+        "acquired": false,
+        "archived": false,
+        "image": {
+          "type": "image/png",
+          "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAALUlEQVR4nGPcee4yAy0BE01NH7Vg1IJRC0YtGLVg1IJRC0YtGLVg1IJRC6gIABBUAppYNHN/AAAAAElFTkSuQmCC"
+        }
+      },
+      {
+        "id": "r_neutral_hidden",
+        "name": "中性隐藏款",
+        "type": "hidden",
+        "price": 0,
+        "rule": {
+          "kind": "combined",
+          "value": 1
+        },
+        "acquired": false,
+        "archived": false,
+        "image": {
+          "type": "image/png",
+          "data": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAIAAAD8GO2jAAAALUlEQVR4nGPcee4yAy0BE01NH7Vg1IJRC0YtGLVg1IJRC0YtGLVg1IJRC6gIABBUAppYNHN/AAAAAElFTkSuQmCC"
+        }
+      }
+    ],
+    "spent": 0,
+    "equipped": null,
+    "milestones": {
+      "lv": 13,
+      "maxRun": 21,
+      "pubs": 3,
+      "bossW": [
+        4,
+        8,
+        12
+      ],
+      "cards": [
+        "c1",
+        "c2",
+        "c3",
+        "c4",
+        "c5",
+        "c6",
+        "c7",
+        "c8"
+      ]
+    }
+  }
+}

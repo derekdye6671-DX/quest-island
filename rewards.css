@@ -1,0 +1,22 @@
+/* Small additions; keep the original island layout and palette. */
+.reward-help{font-size:13px;color:var(--muted);margin:8px 0 14px}
+.reward-controls{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.reward-controls .xbtn{margin:0;min-height:44px}
+.item button.reward-secondary{background:var(--bg);color:var(--ink);font-weight:400}
+.reward-manage-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding:8px 0;font-size:13px}
+.reward-manage-row span{flex:1 1 140px;overflow-wrap:anywhere}
+.reward-manage-row .xbtn{min-height:44px;font-size:13px}
+#rewardEditor{box-sizing:border-box;border:1px solid var(--line);border-radius:16px;padding:20px;background:var(--panel);color:var(--ink);width:calc(100% - 24px);max-width:460px;max-height:calc(100dvh - 24px);overflow:auto;font:inherit}
+#rewardEditor::backdrop{background:rgba(10,14,20,.72)}
+#rewardEditor h2{font-size:22px}
+#rewardForm{display:grid;gap:12px}
+#rewardForm label{display:grid;gap:5px;font-size:14px}
+#rewardForm input,#rewardForm select{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;border:1px solid var(--line);border-radius:9px;padding:9px;font:inherit;font-size:16px;background:var(--bg);color:var(--ink)}
+#rewardPreview{width:100%;max-height:180px;object-fit:contain;border-radius:8px;background:var(--bg)}
+#rewardEditorError{color:var(--warn);font-size:13px;overflow-wrap:anywhere;margin:0}
+#rewardStatus{overflow-wrap:anywhere}
+#rewardForm .reward-controls{margin:0}
+#rewardForm .xbtn{flex:1}
+#rewardPanel[aria-busy="true"] button{pointer-events:none;opacity:.6}
+#localRewards .item .n{overflow-wrap:anywhere}
+select:focus-visible,summary:focus-visible{outline:3px solid var(--xp);outline-offset:2px}

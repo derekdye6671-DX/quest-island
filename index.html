@@ -6,6 +6,7 @@
 <title>冒险岛</title>
 <meta name="description" content="十二周冒险岛：每日打卡、Claude 验收、金币和等级">
 <meta name="theme-color" content="#EDF3F0">
+<link rel="stylesheet" href="rewards.css">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -283,6 +284,16 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
     <div class="gallery" id="gallery"></div>
   </section>
 
+  <section class="panel" id="rewardPanel">
+    <h2>本地奖励图 <small>自己添加 · 跨十二周保留</small></h2>
+    <p class="reward-help">原有衣橱和图鉴规则不变。在这里添加图片、名称、金币价格与解锁条件。隐藏款在领取前不展示图片；管理入口仍可编辑。图片不上传 GitHub，也不会自动同步到 Claude 或另一部手机。</p>
+    <div class="reward-controls"><button class="xbtn yes" id="rewardAdd" disabled>＋ 添加奖励图</button><button class="xbtn" id="rewardDefault" hidden>换回原有造型</button></div>
+    <p class="note" id="rewardStatus" role="status">正在读取本机图片库…</p>
+    <div class="shop" id="localRewards"></div>
+    <details style="margin-top:14px"><summary>管理全部奖励（含已归档）</summary><p class="note">归档只从奖励栏收起，不删除图片，不退还金币；可随时放回。已解锁奖励编辑后仍保留解锁状态。条件按本机保留的历史最高纪录判断（视频次数保留历轮最高，不跨轮相加）。</p><div id="rewardManager"></div></details>
+    <p class="note">换手机、清理浏览器前请点顶部「💾 备份」；文件包含私人图片，请自行安全保存，不要发到公开仓库。旧版备份导入时保留当前图片库。</p>
+  </section>
+
   <section class="panel">
     <h2>现实奖励 <small>奖励内容自己填，达成后点一下记为已兑现</small></h2>
     <div class="real" id="real"></div>
@@ -353,6 +364,24 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
 
 
 
+<dialog id="rewardEditor" aria-labelledby="rewardEditTitle">
+<form id="rewardForm">
+  <h2 id="rewardEditTitle">添加奖励图</h2>
+  <label>奖励名称<input id="rewardName" maxlength="60" required autocomplete="off"></label>
+  <label>奖励类型<select id="rewardType"><option value="wardrobe">衣橱 · 金币兑换，可换上</option><option value="codex">收藏 · 达标后免费领取</option><option value="hidden">隐藏款 · 达标后免费领取</option></select></label>
+  <label id="rewardPriceField">兑换金币<input id="rewardPrice" type="number" inputmode="numeric" min="0" max="1000000" step="1" value="300" required></label>
+  <label>解锁条件<select id="rewardRule"><option value="level">等级</option><option value="streak">连续全勤天数（历史最高）</option><option value="videos">发视频次数（历史最高）</option><option value="boss4">第 4 周 Boss 两关</option><option value="boss8">第 8 周 Boss 两关</option><option value="boss12">第 12 周 Boss 两关（十二周通关）</option><option value="codex">原有 8 张图鉴集齐</option><option value="combined">十二周通关 + 原有图鉴集齐</option></select></label>
+  <label id="rewardValueField">条件数值<input id="rewardValue" type="number" inputmode="numeric" min="1" max="10000" step="1" value="1" required></label>
+  <label>选择本机图片（新建必选，编辑可不换）<input id="rewardImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
+  <p class="note">单张 ≤8 MB，总计 ≤80 MB / 100 项。支持 JPG、PNG、WebP；HEIC 请先转 JPG。不支持网址、SVG。不会扫描桌面文件夹。</p>
+  <img id="rewardPreview" alt="所选奖励图预览" hidden>
+  <p class="note" id="rewardOwnedNote" hidden>已解锁：修改名称、图片或条件不会重新扣金币，也不会取消已获奖励。已兑换衣橱不能改类型。</p>
+  <p id="rewardEditorError" role="alert"></p>
+  <div class="reward-controls"><button type="button" class="xbtn" id="rewardCancel">取消</button><button type="submit" class="xbtn yes" id="rewardSave">保存到本机</button></div>
+</form>
+</dialog>
+<script src="reward-library.js"></script>
+<script src="reward-ui.js"></script>
 <script>
 const START = "2026-11-09"; // 第1周周一
 const REV = "2026-11-11";   // 修订生效日：之前的日子按旧规则结算，保证历史金币不变
@@ -557,7 +586,7 @@ function compute(){
   const pubs=Object.values(S.weekly).filter(e=>e&&e.pub).length;
   const lastFull=dayFull(todayStr())||dayFull(addDays(todayStr(),-1));
   const mood=streak>=7?"star":streak>=1?"smile":(Object.keys(S.log).length&&!lastFull?"sad":"calm");
-  const out={xp, coins:coins-S.spent, stats, lv:lv+1, streak, maxRun, pubs, bossW, boss:bossW.length, mood};
+  const out={xp, coins:coins-S.spent-RewardUI.spent, stats, lv:lv+1, streak, maxRun, pubs, bossW, boss:bossW.length, mood};
   out.cards=CARDS.filter(k=>k.ok(out)).map(k=>k.id);
   return out;
 }
@@ -585,9 +614,10 @@ function render(){
   document.getElementById("coins").textContent=c.coins;
   document.getElementById("xp").textContent=c.xp;
   document.getElementById("streak").textContent=c.streak;
+  const customLook=RewardUI.equipped();
   const L=LOOKS.find(x=>x.id===S.look)||LOOKS[0];
-  document.getElementById("stage").innerHTML=imgTag(L.id,"hero","当前造型："+L.name);
-  document.getElementById("lookname").textContent=L.name;
+  document.getElementById("stage").innerHTML=customLook?RewardUI.art(customLook,"hero"):imgTag(L.id,"hero","当前造型："+L.name);
+  document.getElementById("lookname").textContent=customLook?customLook.name:L.name;
   document.getElementById("mood").textContent={star:"✨ 状态爆棚",smile:"🙂 状态不错",calm:"等待第一次打卡",sad:"😟 昨天没全勤…"}[c.mood];
   document.getElementById("galcount").textContent=`已收集 ${c.cards.length} / ${CARDS.length}，集齐 8/8 解锁特典「午夜特工」`;
   document.getElementById("gallery").innerHTML=CARDS.map(k=>{const on=c.cards.includes(k.id);
@@ -652,7 +682,7 @@ function render(){
   // shop
   const all=c.cards.length===CARDS.length;
   document.getElementById("shop").innerHTML=LOOKS.map(i=>{
-    const own=i.id==="l1"||S.owned.includes(i.id), worn=L.id===i.id, lvOK=i.hidden?all:(!i.lv||c.lv>=i.lv);
+    const own=i.id==="l1"||S.owned.includes(i.id), worn=!customLook&&L.id===i.id, lvOK=i.hidden?all:(!i.lv||c.lv>=i.lv);
     let btn, lock="";
     if(worn) btn=`<button class="worn" disabled>当前造型</button>`;
     else if(own) btn=`<button class="eq" data-eq="${i.id}">换上</button>`;
@@ -662,6 +692,8 @@ function render(){
     const show=own||(!i.hidden&&lvOK);
     return `<div class="item ${show?"":"locked"}"><div class="ph">${imgTag(i.id,"",i.name)}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
   }).join("");
+
+  RewardUI.render(c);
 
   // real rewards
   document.getElementById("real").innerHTML=REAL.map(r=>{
@@ -725,8 +757,8 @@ document.addEventListener("click",ev=>{
     mutate(()=>{EX[id]={week:to,at:x.at||Date.now(),movedFrom:x.week}},`${id} 已顺延到第 ${to} 周`);return}
   if(b.dataset.real){const r=b.dataset.real;mutate(()=>{const o=S.real[r]||(S.real[r]={});o.done=true;syncPro()},"已记为兑现，好好享受！");return}
   if(b.dataset.buy){const it=LOOKS.find(i=>i.id===b.dataset.buy);if(compute().coins<it.price)return;
-    mutate(()=>{S.spent+=it.price;S.owned.push(it.id);S.look=it.id;syncPro()},`解锁新造型「${it.name}」`);return}
-  if(b.dataset.eq){const it=LOOKS.find(i=>i.id===b.dataset.eq);mutate(()=>{S.look=it.id;syncPro()},`换上「${it.name}」`);return}
+    RewardUI.useBuiltin(()=>mutate(()=>{S.spent+=it.price;S.owned.push(it.id);S.look=it.id;syncPro()},`解锁新造型「${it.name}」`));return}
+  if(b.dataset.eq){const it=LOOKS.find(i=>i.id===b.dataset.eq);RewardUI.useBuiltin(()=>mutate(()=>{S.look=it.id;syncPro()},`换上「${it.name}」`));return}
 });
 document.addEventListener("change",ev=>{
   const id=ev.target.id||"";
@@ -769,21 +801,45 @@ function download(name,obj){
   a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 }
 document.getElementById("exportBtn").addEventListener("click",()=>{if(!planReady)return;download("quest12-checkins.json",buildExport());toast("已导出 quest12-checkins.json，发给 Grok 版导入")});
-document.getElementById("backupBtn").addEventListener("click",()=>{download("冒险岛备份-"+todayStr()+".json",{schema:"quest-island-backup/v1",exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO});toast("已导出备份文件，换手机时导入它")});
-document.getElementById("restoreFile").addEventListener("change",ev=>{
-  const f=ev.target.files[0];ev.target.value="";if(!f)return;
-  f.text().then(t=>{let d;try{d=JSON.parse(t)}catch(e){toast("文件读不出来，不是备份文件");return}
-    if(!d||d.schema!=="quest-island-backup/v1"){toast("这不是冒险岛备份文件");return}
-    const n=Object.keys(LOG).length;
-    if(n&&!confirmRestore(n))return;
-    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
-  });
+// v2 includes local images; v1 restores game data while leaving the image library intact.
+const gameSnapshot=()=>({exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO});
+let backupBusy=false;
+document.getElementById("backupBtn").addEventListener("click",async()=>{
+  if(backupBusy||RewardUI.busy)return;backupBusy=true;
+  const b=document.getElementById("backupBtn");b.disabled=true;
+  try{download("冒险岛含图片备份-"+todayStr()+".json",await RewardUI.backup(gameSnapshot()));toast("已导出含图片备份，请安全保存，勿上传公开仓库")}
+  catch(e){RewardUI.error(e)}finally{backupBusy=false;b.disabled=false}
 });
-function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 天的打卡，导入备份会整体替换它们。确定吗？`)}
+document.getElementById("restoreFile").addEventListener("change",async ev=>{
+  const f=ev.target.files[0];ev.target.value="";if(!f||backupBusy||RewardUI.busy)return;
+  backupBusy=true;
+  try{
+    const decoded=await RewardUI.readBackup(f);
+    const message=`导入将替换本机的打卡、提交和原有衣橱记录。${decoded.rewards?"本地奖励图片库也将整体替换（不是合并）。":"这是旧版备份，本机奖励图片库保留不变。"}请先导出当前备份。确定继续？`;
+    if(!window.confirm(message))return;
+    await RewardUI.exclusive(async()=>{
+      await RewardUI.restore(decoded);
+      ({log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO}=decoded.game);
+      derive();if(planReady)render();toast("备份已导入；验收仍以 Claude 清单为准");
+    });
+  }catch(e){RewardUI.error(e)}finally{backupBusy=false}
+});
 
 /* ---------- 读取计划和验收清单 ---------- */
 function loading(msg){document.getElementById("tasks").innerHTML=`<div class="note" style="padding:12px 0">${esc(msg)}</div>`}
-async function getJSON(url){const r=await fetch(url+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.json()}
+// A stalled connection must not leave boot waiting forever. The worker normally
+// supplies the offline response; this fallback also bounds older worker versions.
+async function getJSON(url){
+  const controller=new AbortController();let timer;
+  try{
+    const response=fetch(url+"?t="+Date.now(),{cache:"no-store",signal:controller.signal}).then(async r=>{if(!r.ok)throw new Error(r.status);return r.json()});
+    const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new Error("联网超时"))},8000)});
+    return await Promise.race([response,timeout]);
+  }catch(e){
+    if("caches" in globalThis){const cached=await caches.match(new URL(url,location.href).href);if(cached?.ok)return cached.json()}
+    throw e;
+  }finally{clearTimeout(timer)}
+}
 async function fetchPlan(){
   try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
     document.getElementById("planver").textContent=PLAN_VERSION?" · 计划 "+PLAN_VERSION:"";}
@@ -799,6 +855,7 @@ async function fetchVerified(manual){
 }
 const after_=()=>planReady?compute().coins:0;
 (async()=>{
+  await RewardUI.init({stats:()=>compute(),changed:()=>{if(planReady)render()},notify:toast});
   loadLocal();
   if(!storageOK) toast("这个浏览器不让存数据（可能是无痕模式），打卡会丢");
   loading("读取计划中…");
