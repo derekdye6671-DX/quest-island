@@ -150,10 +150,22 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--xp);outline-off
 .item button:disabled{background:var(--line);color:var(--muted);cursor:default}
 .item .lock{font-size:11px;color:var(--muted)}
 /* map */
-.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.week{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:6px;font-size:13px;align-content:start}
+.map{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;align-items:start}
+.week{border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;min-width:0;overflow-wrap:anywhere}
 .week.now{border:2px solid var(--xp);box-shadow:0 0 0 4px var(--xp-soft)}
-.week.done{opacity:.72}
+.week.completed{border-color:var(--success)}
+.week>summary{list-style:none;display:grid;gap:8px;position:relative;padding-right:24px}
+.week>summary::-webkit-details-marker{display:none}
+.week>summary::after{content:"＋";position:absolute;right:0;top:0;color:var(--brand)}
+.week[open]>summary::after{content:"−"}
+.week-heading{font-size:16px;font-weight:600}
+.week-status{font-size:12px;color:var(--muted)}.week.completed .week-status{color:var(--success)}
+.week-deliver{font-size:13px;color:var(--muted)}
+.week-body{display:grid;gap:8px;padding-top:12px;margin-top:12px;border-top:1px solid var(--line)}
+.boss-badge{display:inline-block;font-size:12px;border-radius:6px;padding:2px 6px;background:var(--gold-soft);color:var(--gold-ink);margin-left:4px}
+.map-jump{font:inherit;min-height:44px;padding:8px 12px;margin-bottom:12px;border:1px solid var(--line);border-radius:10px;color:var(--brand);background:var(--surface)}
+#ov .ov-box{animation-duration:.2s}
+@media(prefers-reduced-motion:reduce){#ov .ov-box{animation:none}}
 .week h3{font-size:16px;display:flex;justify-content:space-between;gap:6px}
 .week h3 .num{font-size:12px;color:var(--muted)}
 .week .row{display:grid;grid-template-columns:22px 1fr;gap:4px}
@@ -399,7 +411,7 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
   </div>
 
   <section class="panel" data-tab="adventure">
-    <h2>本周任务 <small id="wklabel"></small></h2>
+    <h2>本周任务 <small id="wklabel" tabindex="-1"></small></h2>
     <div id="extraBox"></div>
     <div class="wk" id="weekly"></div>
     <div id="prodBox"></div>
@@ -433,6 +445,7 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
 
   <section class="panel" data-tab="adventure">
     <h2>12 周冒险地图 <small>📦 要交出 · 🗝️ Claude Code · 🐙 GitHub · 🤖 ChatGPT · ✨ Gemini · ⚡ Grok · 🎬 视频（可选）· 🗣️ 英语</small></h2>
+    <button type="button" class="map-jump" id="goCurrentWeek">前往本周任务 ↑</button>
     <div class="map" id="map"></div>
   </section>
 
@@ -936,11 +949,16 @@ function render(){
 
   // map
   const curW=weekOf(today);
+  document.getElementById("goCurrentWeek").disabled=curW<1||curW>12;
   document.getElementById("map").innerHTML=WEEKS.map((x,i)=>{
     const n=i+1, req=WEEKLY.filter(t=>!t.opt), cnt=req.filter(t=>weeklyOK(t,n)).length;
-    return `<div class="week ${n===curW?"now":""} ${n<curW?"done":""}"><h3>${x.boss?"⚔️ ":""}第${n}周 · ${x.t}<span class="num">${cnt}/${req.length}</span></h3>
-    <div class="note">${x.d}</div>${x.hol?`<div class="hol">🎄 ${x.hol}</div>`:""}
-    <div class="row"><span>📦</span><span class="del">${esc(x.del)}</span></div>
+    const complete=cnt===req.length;
+    const status=complete?`已完成 · ${cnt}/${req.length}`:n<curW?`已结束 · 完成 ${cnt}/${req.length}`:n===curW?`当前周 · 完成 ${cnt}/${req.length}`:`后续周 · 完成 ${cnt}/${req.length}`;
+    return `<details class="week ${n===curW?"now":""} ${n<curW?"past":""} ${complete?"completed":""}" data-map-week="${n}" ${n===curW?"open":""}><summary>
+    <span class="week-heading">第${n}周 · ${esc(x.t)}${x.boss?`<span class="boss-badge">${c.bossW.includes(n)?"Boss 已通关":"Boss 双关"}</span>`:""}</span>
+    <span class="week-status">${status}</span><span class="note">${esc(x.d)}</span>
+    <span class="week-deliver">📦 ${esc(x.del)}</span></summary><div class="week-body">
+    ${x.hol?`<div class="hol">🎄 ${esc(x.hol)}</div>`:""}
     <div class="row"><span>🗝️</span><span class="${x.boss?"boss":""}">${esc(CC[i].t)}</span></div>
     <div class="row"><span>🐙</span><span class="${x.boss?"boss":""}">${esc(GIT[i].t)}</span></div>
     <div class="row"><span>🤖</span><span>${esc(GPT[i].t)}</span></div>
@@ -949,7 +967,7 @@ function render(){
     <div class="row"><span>🎬</span><span>${esc(x.v)}</span></div>
     <div class="row"><span>🗣️</span><span>${esc(x.e)}</span></div>
     ${(S.extra[n]||[]).map(id=>`<div class="row"><span>🚀</span><span>拓展 ${id}：${esc(extraOf(id)?.t||"")}${VE[id]?" ✓":""}</span></div>`).join("")}
-    <details class="steps"><summary>每日主技术块（周一到周日）</summary><ol>${DAYS[i].map(D=>`<li>${esc(D.t)}</li>`).join("")}</ol></details></div>`;
+    <details class="steps"><summary>每日主技术块（周一到周日）</summary><ol>${DAYS[i].map(D=>`<li>${esc(D.t)}</li>`).join("")}</ol></details></div></details>`;
   }).join("");
 }
 
@@ -961,8 +979,10 @@ function celebrate(before,msg){let after=compute();
   render();
   const newCard=CARDS.find(k=>after.cards.includes(k.id)&&!before.cards.includes(k.id));
   const newAuto=LOOKS.find(i=>after.autos.includes(i.id)&&!before.autos.includes(i.id));
+  const newBoss=after.bossW.find(w=>!before.bossW.includes(w));
   if(newCard) overlay(newCard.id,"解锁图鉴！",`「${newCard.name}」已收入图鉴`+(after.cards.length===CARDS.length?"，特典「午夜特工」已解锁":""));
   else if(newAuto) overlay(newAuto.id,"解锁新造型！",`「${newAuto.name}」已放进衣橱，去换上吧`);
+  else if(newBoss) overlay(S.look||"l1",`第 ${newBoss} 周 Boss 通关！`,"Claude Code 与 GitHub 双关均已验收，奖励按原规则结算");
   else if(after.lv>before.lv){overlay(S.look||"l1",`LV ${after.lv} 升级！`,`新称号「${TITLES[after.lv-1]}」`+(after.lv%3===0?"。记得兑现现实奖励！":""))}
   else if(msg) toast(msg)}
 /* 先改本机数据，存好，再刷新画面 */
@@ -973,6 +993,7 @@ const curWeek=()=>Math.min(Math.max(weekOf(viewDate),1),12);
 const dayEntry=d=>LOG[d]||(LOG[d]={});
 document.addEventListener("click",ev=>{
   const b=ev.target.closest("button"); if(!b||b.disabled) return;
+  if(b.id==="goCurrentWeek"){viewDate=todayStr();render();const label=document.getElementById("wklabel");label.scrollIntoView({block:"start"});label.focus({preventScroll:true});return}
   if(b.id==="prev"){viewDate=addDays(viewDate,-1);render();return}
   if(b.id==="next"){viewDate=addDays(viewDate,1);render();return}
   if(b.id==="refresh"){fetchVerified(true);return}
@@ -1060,9 +1081,10 @@ async function fetchPlan(){
 }
 let lastPass=null;
 async function fetchVerified(manual){
-  try{const d=await getJSON("verified.json");const before=planReady?compute().coins:0;VER=d.items||{};derive();
-    if(planReady){render();const after=compute().coins;
-      if(lastPass!==null&&after>before)toast(`Claude 已验收，+${after-before} 🪙`);else if(manual)toast(d.updatedAt?"验收清单已更新到 "+d.updatedAt.slice(5,16).replace("T"," "):"已刷新")}
+  try{const d=await getJSON("verified.json");const before=planReady?compute():null;VER=d.items||{};derive();
+    if(planReady){const after=compute();
+      if(lastPass!==null&&before&&after.coins>before.coins)celebrate(before,`Claude 已验收，+${after.coins-before.coins} 🪙`);
+      else{render();if(manual)toast(d.updatedAt?"验收清单已更新到 "+d.updatedAt.slice(5,16).replace("T"," "):"已刷新")}}
     lastPass=after_();}
   catch(e){if(manual)toast("没连上网，验收结果先用上次的")}
 }
