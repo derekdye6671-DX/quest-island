@@ -206,6 +206,37 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
 .badge.lock{background:var(--bg);color:var(--muted)}
 .badge.ready{background:var(--gold-soft);color:var(--gold);border:0;cursor:pointer;font:inherit;font-size:12px;font-weight:600}
 .badge.got{background:var(--ok-soft);color:var(--ok)}
+:root{--brand:#277E83;--brand-ink:#fff;--brand-soft:#E1F0F0;--pend:#B7791F;--pend-soft:#FBF0DC}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--brand:#4FB3B8;--brand-ink:#0E1A1F;--brand-soft:#173638;--pend:#E9B45A;--pend-soft:#3A2E17}}
+:root[data-theme="dark"]{--brand:#4FB3B8;--brand-ink:#0E1A1F;--brand-soft:#173638;--pend:#E9B45A;--pend-soft:#3A2E17}
+body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:15;display:grid;grid-template-columns:repeat(4,1fr);background:var(--panel);border-top:1px solid var(--line);padding:6px max(8px,env(safe-area-inset-left,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-right,0px))}
+.tabbar button{font:inherit;font-size:12px;border:0;background:transparent;color:var(--muted);display:grid;justify-items:center;gap:2px;padding:6px 0;min-height:48px;cursor:pointer;border-radius:10px}
+.tabbar button span{font-size:20px;line-height:1}
+.tabbar button.on{color:var(--brand);font-weight:700;background:var(--brand-soft)}
+@media (min-width:900px){.tabbar{left:50%;right:auto;transform:translateX(-50%);width:min(520px,100%);bottom:12px;border:1px solid var(--line);border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.08)}}
+.dprog{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+.dprog .bar{flex:1;height:8px}.dprog .bar>i{background:var(--brand)}
+.dprog .num{font-size:12px;color:var(--muted);white-space:nowrap}
+.linkbtn{font:inherit;font-size:12px;color:var(--muted);background:none;border:0;padding:10px 0 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.linkbtn:disabled{opacity:.4;cursor:default}
+.tools{display:flex;flex-wrap:wrap;gap:10px}
+.tbtn{font:inherit;font-size:14px;font-weight:600;border:1.5px solid var(--brand);color:var(--brand);background:var(--panel);border-radius:10px;padding:10px 14px;min-height:44px;cursor:pointer;display:inline-flex;align-items:center}
+.task .short{font-size:13px;color:var(--muted)}
+.task details{margin-top:4px}
+.task details summary{font-size:12px;color:var(--brand);cursor:pointer;list-style:none;display:inline-block;padding:2px 0}
+.task details summary::-webkit-details-marker{display:none}
+.task details[open] summary{margin-bottom:4px}
+.task details .meta{font-size:12px}
+.task .tag{font-size:10px;padding:1px 6px}
+.vbtn{background:var(--brand);border-color:var(--brand);color:var(--brand-ink);min-height:44px}
+.vbtn.pend{background:var(--pend-soft);border-color:var(--pend);color:var(--pend)}
+.wcard button:not(.on):not(.pend):not(.ghost):not(.xbtn){background:var(--brand);color:var(--brand-ink)}
+.wcard button.pend{background:var(--pend-soft);color:var(--pend)}
+.vok{color:var(--ok)}
+@media (max-width:820px){.todayp{order:-1}}
+@media (max-width:620px){#subline{display:none}h1{font-size:22px}}
+.toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .vnote.ok{background:var(--ok-soft);color:var(--ok)}
 .vnote.bad{background:var(--gold-soft);color:var(--warn)}
 .task .vnote{margin-top:6px;font-size:12px;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--muted)}
@@ -231,15 +262,11 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
       <span class="chip gold">🪙 <span class="num" id="coins">0</span></span>
       <span class="chip xp">✦ XP <span class="num" id="xp">0</span></span>
       <span class="chip ok">🔥 连续 <span class="num" id="streak">0</span> 天</span>
-      <button class="chip exp" id="refresh">🔄 刷新验收</button>
-      <button class="chip exp" id="exportBtn">⬇ 导出给 Grok</button>
-      <button class="chip exp" id="backupBtn">💾 备份</button>
-      <label class="chip exp" for="restoreFile">📂 导入备份</label>
-      <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      <button class="chip exp" id="refresh" aria-label="刷新验收结果">🔄 刷新验收</button>
     </div>
   </header>
 
-  <div class="grid2">
+  <div class="grid2" data-tab="today">
     <section class="panel herop">
       <div class="stage" id="stage"></div>
       <div class="hero-name"><b id="lookname">城市初见</b><span id="mood"></span></div>
@@ -249,47 +276,59 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
       <div class="stats" id="stats"></div>
     </section>
 
-    <section class="panel">
+    <section class="panel todayp">
       <h2>今日任务 <small id="savestate">进度保存中…</small></h2>
       <div class="daynav">
         <button id="prev" aria-label="前一天">◀</button>
         <strong id="dlabel"></strong>
         <button id="next" aria-label="后一天">▶</button>
         <span class="note" id="dweek"></span>
-        <button id="leave" style="margin-left:auto">这天请假</button>
       </div>
+      <div class="dprog"><div class="bar"><i id="dbar" style="width:0"></i></div><span class="num" id="dcount"></span></div>
       <div id="tasks"></div>
       <div class="combo" id="combo"></div>
+      <button class="linkbtn" id="leave">这天请假</button>
     </section>
   </div>
 
-  <section class="panel">
+  <section class="panel" data-tab="adventure">
     <h2>本周任务 <small id="wklabel"></small></h2>
     <div id="extraBox"></div>
     <div class="wk" id="weekly"></div>
   </section>
 
-  <section class="panel">
-    <h2>城市衣橱 <small>用金币解锁新造型，等级越高解锁越多</small></h2>
+  <section class="panel" data-tab="collect">
+    <h2>衣橱 <small>每周开放一款，用金币购买；13–15 款达成条件自动解锁</small></h2>
     <div class="shop" id="shop"></div>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-tab="collect">
     <h2>收藏图鉴 <small id="galcount"></small></h2>
     <div class="gallery" id="gallery"></div>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-tab="me">
+    <h2>数据与同步</h2>
+    <p class="note" style="margin:0 0 12px">打卡、金币、衣橱都只存在这台设备的浏览器里。换手机或清理浏览器之前，先点「备份」。Claude 的验收结果存在网上，刷新就能拿到。</p>
+    <div class="tools">
+      <button class="tbtn" id="backupBtn">💾 备份到文件</button>
+      <label class="tbtn" for="restoreFile">📂 导入备份</label>
+      <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+      <button class="tbtn" id="exportBtn">⬇ 导出给 Grok</button>
+    </div>
+  </section>
+
+  <section class="panel" data-tab="me">
     <h2>现实奖励 <small>奖励内容自己填，达成后点一下记为已兑现</small></h2>
     <div class="real" id="real"></div>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-tab="adventure">
     <h2>12 周冒险地图 <small>📦 要交出 · 🗝️ Claude Code · 🐙 GitHub · 🤖 ChatGPT · ✨ Gemini · ⚡ Grok · 🎬 视频（可选）· 🗣️ 英语</small></h2>
     <div class="map" id="map"></div>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-tab="me">
     <h2>12 周后你能做到什么 <small>终章逐条验收</small></h2>
     <div class="rules">
       <div><b>🗝️ Claude Code</b>在本地仓库里指挥它读、改多个文件并审查每一步；写 CLAUDE.md 定规矩；装现成 Skill、写自己的 Skill；写自定义斜杠命令。</div>
@@ -306,16 +345,16 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
     <ol class="crit">
       <li>Excel 自动报表：公式、格式、图表齐全（第 3 周），之后由 Actions 每周自动生成（第 9 周）</li>
       <li>一键 PPT 汇报：双击从数据生成可编辑的 PPT（第 4 周）</li>
-      <li>上线的英语词卡网站，手机能打开（第 5 周）</li>
+      <li>产品化第一步：计划模板 + 新用户前置页面（规则版可行度评估）（第 5 周）</li>
       <li>自己写的 Skill「脚本润色」，经 Pull Request 合并（第 8 周）</li>
       <li>一条可重复的多模型工作流和说明文档（第 10 周）</li>
-      <li>GitHub 主页作品集 + <b>目标闯关计划工具 v1.0</b>（重点项目，必须完成）：开局判断可行性、每日打卡、补打卡和回归模式、周复盘、进度预警的网页工具，随 v1.0 Release 发布（第 7 周大纲 / 第 11 周做出 / 第 12 周发布）</li>
+      <li>GitHub 主页作品集 + <b>可售卖的产品 v1.0</b>（重点项目，必须完成）：在本网页基础上做出前置评估、两种目标模板、补打卡和回归模式、进度预警、激活码，3 个真实用户试用并在小红书上架（第 5 周前置页面 / 第 7 周大纲和定价 / 第 11 周收尾 / 第 12 周发布）</li>
     </ol>
     <p class="note" style="margin-top:10px">每件作品验收都问 5 个问题：解决了什么问题？从哪启动、准备什么输入？怎么判断结果对不对？出错怎么停下、保护原件、恢复？换一份数据还能照说明再做一次吗？</p>
     <p class="note" style="margin-top:6px">视频是可选的过程记录，12 周建议 4–6 条，不是过关条件。</p>
   </section>
 
-  <section class="panel">
+  <section class="panel" data-tab="me">
     <h2>规则说明</h2>
     <div class="rules">
       <div><b>🧭 第一原则</b>把「学多少技术」让位于「你能否独立用起来」。凡是要敲命令的步骤都由 Claude Code 执行，你看懂并批准；你要会的是启动工具、准备输入、判断结果、出错时停下并恢复。</div>
@@ -338,6 +377,12 @@ details.steps ol{margin:6px 0 2px;padding-left:20px;display:grid;gap:4px}
     </div>
   </section>
 </div>
+<nav class="tabbar" aria-label="主导航">
+  <button data-tabbtn="today"><span>📅</span>今日</button>
+  <button data-tabbtn="adventure"><span>🗺️</span>冒险</button>
+  <button data-tabbtn="collect"><span>👗</span>收藏</button>
+  <button data-tabbtn="me"><span>⚙️</span>我的</button>
+</nav>
 <div class="toast" id="toast" role="status"></div>
 <div class="ov" id="form" hidden><div class="ov-box fm" role="dialog" aria-modal="true" aria-labelledby="fT"><div class="t" id="fT"></div><p class="note" id="fP"></p>
 <label for="fUrl">成果网址（GitHub 文件、提交或仓库链接）</label><input id="fUrl" type="url" maxlength="500" placeholder="https://github.com/...">
@@ -626,14 +671,18 @@ function render(){
       ?`<div class="timer"><input id="in-${t.id}" type="number" min="0" max="100000" inputmode="numeric" value="${e[t.id]||""}" placeholder="0" aria-label="${t.name}" class="wide ${ok?"met":""}" ${dis}><span>${t.unit}</span></div>`
       :`<button class="check ${ok?"on":""}" data-c="${t.id}" aria-pressed="${ok}" aria-label="${t.name}" ${dis}>✓</button>`;
     let extra="";
-    if(t.id==="cc"){const D=old?null:dayTask(viewDate);extra=(D?`<div class="step"><b>今天的任务：${esc(D.t)}</b><br>${esc(D.s)}${D.p?`<br>📎 验收证明：${esc(D.p)}`:""}</div>`:"")+subNote(subOf("d_"+viewDate));}
+    if(t.id==="cc"){const D=old?null:dayTask(viewDate);extra=(D?`<details class="ccd"><summary>今天的步骤和验收证明 ›</summary><div class="step">${esc(D.s)}${D.p?`<br>📎 验收证明：${esc(D.p)}`:""}</div></details>`:"")+subNote(subOf("d_"+viewDate));}
     if(t.id==="eng"&&!old) extra=`<div class="meta">本周已练 ${engN} / 5 天${!e.eng&&engDaysInWeek(viewDate,viewDate)>=5?"，今天不练也不影响全勤":""}</div>`;
-    return `<div class="task"><div class="ico">${t.ico}</div><div style="min-width:0"><div class="name">${t.name}<span class="tag ${t.kind}">${{t:"计数",c:"打卡",v:"验收"}[t.kind]}</span></div><div class="meta">${t.meta} · +${t.coin} 🪙</div>${extra}</div>${ctl}</div>`;
+    const full=t.meta.replace(/^(打卡|计数|验收) · /,"");
+    const short=t.id==="cc"&&!old&&dayTask(viewDate)?"今天："+dayTask(viewDate).t:(full.split(/[；，,（(]/)[0]);
+    return `<div class="task"><div class="ico">${t.ico}</div><div style="min-width:0"><div class="name">${t.name}<span class="tag ${t.kind}">${{t:"计数",c:"打卡",v:"验收"}[t.kind]}</span> <span class="note">+${t.coin} 🪙</span></div><div class="short">${esc(short)}</div>${extra}<details><summary>详情 ›</summary><div class="meta">${esc(full)}</div></details></div>${ctl}</div>`;
   }).join("");
   const req=rulesFor(viewDate).filter(t=>required(t,viewDate));
   const n=req.filter(t=>done(t,S.log[viewDate],viewDate)).length;
   const cb=document.getElementById("combo");
   const lv=isLeave(viewDate);
+  document.getElementById("dbar").style.width=(req.length?Math.round(n/req.length*100):0)+"%";
+  document.getElementById("dcount").textContent=`${n} / ${req.length} 已完成`;
   cb.className="combo"+(n===req.length&&!lv?"":" off");
   cb.textContent=lv?"🛌 这天请假：不算全勤，也不打断连击":n===req.length?"🎯 全勤达成！额外 +15 金币":`应做 ${req.length} 项，已完成 ${n} 项；主技术块验收后才算全勤`;
   const lb=document.getElementById("leave");lb.textContent=lv?"取消请假":"这天请假";lb.disabled=locked||!canWrite;
@@ -809,6 +858,15 @@ async function fetchVerified(manual){
   catch(e){if(manual)toast("没连上网，验收结果先用上次的")}
 }
 const after_=()=>planReady?compute().coins:0;
+/* ---------- 底部导航 ---------- */
+const TABKEY="quest-island-tab";
+function showTab(t){
+  for(const el of document.querySelectorAll("[data-tab]")) el.hidden=el.dataset.tab!==t;
+  for(const b of document.querySelectorAll("[data-tabbtn]")){const on=b.dataset.tabbtn===t;b.classList.toggle("on",on);b.setAttribute("aria-current",on?"page":"false")}
+  try{localStorage.setItem(TABKEY,t)}catch(e){}
+}
+document.querySelector(".tabbar").addEventListener("click",ev=>{const b=ev.target.closest("[data-tabbtn]");if(!b)return;showTab(b.dataset.tabbtn);window.scrollTo(0,0)});
+(()=>{let t="today";try{t=localStorage.getItem(TABKEY)||"today"}catch(e){}if(!document.querySelector(`[data-tab="${t}"]`))t="today";showTab(t)})();
 (async()=>{
   loadLocal();
   if(!storageOK) toast("这个浏览器不让存数据（可能是无痕模式），打卡会丢");
