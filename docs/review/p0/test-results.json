@@ -1,0 +1,8 @@
+[
+  "5 fixture comparisons: totals, levels, streak, rewards, export and historical repair identical",
+  "UI: check/cancel, persistence, count threshold, leave, date limits, pending/fail/pass, backup/export and restore confirmation PASS",
+  "40 after-layout checks: no horizontal overflow; enabled controls >=44px in both themes",
+  "PWA online/offline/online reload and all 24 image paths PASS",
+  "plan.json, verified.json, sw.js and 24 images byte-identical to baseline",
+  "Old service worker cache -> online P0 shell -> offline P0 shell: PASS; localStorage unchanged byte-for-byte"
+]
