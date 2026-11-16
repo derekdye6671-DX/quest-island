@@ -334,6 +334,32 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
+<style id="collection-styles">
+/* P1: original assets, stable proportions, distinct viewing controls. */
+.shop,.gallery{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media(min-width:620px){.shop,.gallery{grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}}
+.image-shell{position:relative;display:block;aspect-ratio:9/16;width:100%;background:var(--surface-soft);overflow:hidden;border-radius:8px}
+.image-shell img{display:block;width:100%;height:100%;object-fit:contain;filter:none!important;transform:none!important}
+.image-fallback{position:absolute;inset:0;display:grid;place-content:center;gap:8px;text-align:center;padding:12px;color:var(--muted);font:400 12px/1.6 var(--f-body)}
+.image-placeholder{aspect-ratio:9/16;width:100%;display:grid;place-content:center;gap:12px;text-align:center;padding:12px;background:var(--surface-soft);color:var(--muted);font-size:12px;border-radius:8px}
+.image-placeholder>span:first-child{font-size:32px;color:var(--brand)}
+.image-view{position:relative;display:block;width:100%;padding:0;border:0;border-radius:8px;background:var(--surface-soft);color:var(--ink);cursor:zoom-in;overflow:hidden}
+.view-hint{position:absolute;right:6px;bottom:6px;padding:4px 6px;border-radius:6px;background:var(--surface);color:var(--ink);font-size:12px;pointer-events:none}
+.item .ph{overflow:visible}.item .ph .lk{background:var(--surface);color:var(--muted);padding:4px;bottom:8px}
+.item .ph .image-view{padding:0;background:var(--surface-soft)}
+.item .n{font-size:15px}.item .d,.item .lock{font-size:12px}
+.item.locked .ph img,.card.locked img{filter:none;transform:none}
+.card{align-content:start}.card .cap{min-height:80px;gap:4px}.card .cap span{color:var(--muted)}
+.stage{overflow:visible}.stage .image-view{height:100%}.stage img.hero{object-fit:contain}
+.image-viewer{width:min(480px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);overflow:auto}
+.image-viewer::backdrop{background:rgba(10,20,24,.76)}
+.image-viewer header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.image-viewer h2{font-size:18px}.image-viewer button{font:inherit;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--surface-soft);color:var(--ink)}
+#imageViewerArt{width:min(100%,calc(70vh * 9 / 16));margin:auto}
+#imageViewerArt .image-shell{max-height:70vh}#imageViewerRetry{display:block;margin:12px auto 0}
+#ov .ov-box{max-height:calc(100dvh - 32px);overflow:auto}#ovart{width:min(100%,calc(65vh * 9 / 16));margin:auto}#ovart img{max-height:none;object-fit:contain}
+</style>
+
 <div class="wrap">
   <header class="top">
     <div>
@@ -477,6 +503,12 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
 <div class="row2"><button class="sec" id="fCancel">取消</button><button id="fSend">提交并复制</button></div></div></div>
 <div class="ov" id="copyOv" hidden><div class="ov-box fm" role="dialog" aria-modal="true"><div class="t">复制验收申请</div><p class="note">自动复制没成功，请长按下面的文字全选复制，发给 Claude。</p><textarea id="cpText" readonly></textarea><div class="row2"><span></span><button id="cpClose">好了</button></div></div></div>
 <div class="ov" id="ov" hidden><div class="ov-box" role="dialog" aria-modal="true" aria-labelledby="ovt"><div id="ovart"></div><div class="t" id="ovt"></div><p id="ovp"></p><button id="ovclose">收下奖励</button></div></div>
+
+<dialog id="imageViewer" class="image-viewer" aria-labelledby="imageViewerTitle">
+  <header><h2 id="imageViewerTitle"></h2><button type="button" id="imageViewerClose" aria-label="关闭大图">关闭 ×</button></header>
+  <div id="imageViewerArt"></div>
+  <button type="button" id="imageViewerRetry" hidden>重新加载图片</button>
+</dialog>
 
 
 
@@ -710,7 +742,53 @@ function compute(){
 }
 
 const IMG=id=>id[0]==="c"?`img/card-${id.slice(1)}.jpg`:`img/look-${id.slice(1).padStart(2,"0")}.jpg`;
-function imgTag(id,cls,alt){return `<img src="${IMG(id)}" alt="${esc(alt||"")}" class="${cls||""}" loading="lazy" decoding="async">`}
+function imgTag(id,cls,alt){return `<span class="image-shell"><img src="${IMG(id)}" data-image-id="${id}" width="540" height="960" alt="${esc(alt||"")}" class="${cls||""}" loading="lazy" decoding="async"><span class="image-fallback" hidden>图片暂未加载<br>联网后点击图片重试</span></span>`}
+/* Image viewing is presentation-only: no purchases, rewards or storage writes. */
+function imageOwned(id,c){
+  const look=LOOKS.find(x=>x.id===id);
+  return look?look.price===0||S.owned.includes(id)||c.autos.includes(id)||(look.hidden&&c.cards.length===CARDS.length):c.cards.includes(id);
+}
+function imageViewable(id){return id!=="l16"&&imageOwned(id,compute())}
+function imagePreview(id,name,context){return `<button type="button" class="image-view" data-view="${id}" data-view-context="${context}" aria-label="查看${esc(name)}完整大图">${imgTag(id,"",name)}<span class="view-hint" aria-hidden="true">查看大图 ↗</span></button>`}
+function imagePlaceholder(label){return `<div class="image-placeholder"><span aria-hidden="true">◇</span><span>${esc(label)}</span></div>`}
+const imageViewer=document.getElementById("imageViewer");
+let imageReturn=null;
+function closeImageViewer(){if(imageViewer.open)imageViewer.close()}
+imageViewer.addEventListener("close",()=>{
+  document.getElementById("imageViewerArt").replaceChildren();
+  let target=imageReturn&&imageReturn.element;
+  if(!target?.isConnected&&imageReturn)target=document.querySelector(`[data-view="${imageReturn.id}"][data-view-context="${imageReturn.context}"]`);
+  if(!target?.isConnected)target=document.querySelector('.tabbar button.on');
+  target?.focus({preventScroll:true});imageReturn=null;
+});
+imageViewer.addEventListener("keydown",ev=>{
+  if(ev.key!=="Tab")return;
+  const buttons=[...imageViewer.querySelectorAll('button')].filter(b=>!b.disabled&&b.getClientRects().length);
+  const first=buttons[0],last=buttons[buttons.length-1];
+  if(ev.shiftKey&&document.activeElement===first){ev.preventDefault();last.focus()}
+  else if(!ev.shiftKey&&document.activeElement===last){ev.preventDefault();first.focus()}
+});
+imageViewer.addEventListener("click",ev=>{if(ev.target===imageViewer){const r=imageViewer.getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)closeImageViewer()}});
+document.getElementById("imageViewerClose").addEventListener("click",closeImageViewer);
+function retryImage(container){const img=container.querySelector("img[data-image-id]");if(img)img.src=IMG(img.dataset.imageId)+"?retry="+Date.now()}
+document.getElementById("imageViewerRetry").addEventListener("click",()=>retryImage(document.getElementById("imageViewerArt")));
+document.addEventListener("click",ev=>{
+  const button=ev.target.closest("button[data-view]");if(!button||!planReady||!imageViewable(button.dataset.view))return;
+  if(button.querySelector('.image-shell.has-error')){retryImage(button);return}
+  const id=button.dataset.view,item=LOOKS.find(x=>x.id===id)||CARDS.find(x=>x.id===id);
+  imageReturn={element:button,id,context:button.dataset.viewContext};
+  document.getElementById("imageViewerTitle").textContent=item.name;
+  document.getElementById("imageViewerArt").innerHTML=imgTag(id,"",item.name);
+  document.getElementById("imageViewerRetry").hidden=true;
+  imageViewer.showModal();document.getElementById("imageViewerClose").focus();
+});
+for(const event of ["load","error"])document.addEventListener(event,ev=>{
+  const img=ev.target;if(!(img instanceof HTMLImageElement)||!img.dataset.imageId)return;
+  const shell=img.closest('.image-shell'),failed=event==="error";if(!shell)return;
+  shell.classList.toggle('has-error',failed);img.hidden=failed;shell.querySelector('.image-fallback').hidden=!failed;
+  const button=img.closest('[data-view]');if(button)button.setAttribute('aria-label',failed?"图片加载失败，点击重试":"查看"+img.alt+"完整大图");
+  if(imageViewer.contains(img))document.getElementById("imageViewerRetry").hidden=!failed;
+},true);
 /* ---------- 产品任务优先 ----------
    产品任务按顺序做；做完一项就问要不要把下一项提前到本周；提前后原来那一周留作缓冲。
    产品任务全部完成之前，不发拓展任务，已领但没验收的拓展任务先收起。 */
@@ -764,12 +842,12 @@ function render(){
   document.getElementById("xp").textContent=c.xp;
   document.getElementById("streak").textContent=c.streak;
   const L=LOOKS.find(x=>x.id===S.look)||LOOKS[0];
-  document.getElementById("stage").innerHTML=imgTag(L.id,"hero","当前造型："+L.name);
+  document.getElementById("stage").innerHTML=imageViewable(L.id)?imagePreview(L.id,L.name,"hero"):imageOwned(L.id,c)?imgTag(L.id,"hero","当前造型："+L.name):imagePlaceholder("造型尚未解锁");
   document.getElementById("lookname").textContent=L.name;
   document.getElementById("mood").textContent={star:"✨ 状态爆棚",smile:"🙂 状态不错",calm:"等待第一次打卡",sad:"😟 昨天没全勤…"}[c.mood];
   document.getElementById("galcount").textContent=`已收集 ${c.cards.length} / ${CARDS.length}，集齐 8/8 解锁特典「午夜特工」`;
   document.getElementById("gallery").innerHTML=CARDS.map(k=>{const on=c.cards.includes(k.id);
-    return `<div class="card ${on?"":"locked"}">${imgTag(k.id,"",on?k.name:"未解锁图鉴")}<div class="cap"><b>${on?k.name:"？？？"}</b><span>${k.hint}</span></div></div>`}).join("");
+    return `<div class="card ${on?"":"locked"}">${on?imagePreview(k.id,k.name,"gallery"):imagePlaceholder("达成条件后解锁")}<div class="cap"><b>${on?k.name:"？？？"}</b><span>${k.hint}</span></div></div>`}).join("");
   const lvIdx=c.lv-1, cur=LEVELS[lvIdx], nxt=LEVELS[lvIdx+1];
   document.getElementById("ltitle").textContent=TITLES[lvIdx];
   document.getElementById("lnum").textContent="LV "+c.lv;
@@ -845,8 +923,8 @@ function render(){
     else if(i.auto){const have=i.id==="l13"?c.fitDays:i.id==="l14"?c.engDays:c.extrasDone, need=i.id==="l15"?5:30;btn=`<button disabled>${i.cond}${have} / ${need}</button>`;lock="达成条件解锁"}
     else if(!open){btn=`<button disabled>🪙 ${i.price}</button>`;lock=`第 ${i.wk} 周开放`}
     else btn=`<button data-buy="${i.id}" ${c.coins>=i.price&&canWrite?"":"disabled"}>🪙 ${i.price}</button>`;
-    const show=own||(!i.hidden&&open);
-    return `<div class="item ${show?"":"locked"}"><div class="ph">${imgTag(i.id,"",show?i.name:"未解锁造型")}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
+    const show=!i.hidden&&(own||open);
+    return `<div class="item ${show?"":"locked"}"><div class="ph">${show?(own?imagePreview(i.id,i.name,"wardrobe"):imgTag(i.id,"",i.name)):imagePlaceholder(i.hidden?"隐藏造型":"解锁后可查看")}${lock?`<span class="lk">🔒 ${lock}</span>`:""}</div><div class="n">${own||!i.hidden?i.name:"？？？"}</div><div class="d">${i.desc}</div>${btn}</div>`;
   }).join("");
 
   // real rewards

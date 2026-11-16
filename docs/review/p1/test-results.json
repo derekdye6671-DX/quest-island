@@ -1,0 +1,11 @@
+[
+  "PASS: empty and full 84-day fixtures preserve compute(), rewards and export versus P0",
+  "PASS: locked images absent; l16 has no viewer; Esc/backdrop/close, focus return and re-render fallback; view does not mutate storage/coins",
+  "PASS: purchase/equip preserved; 23 permitted collection viewers work; l16 excluded",
+  "PASS: thumbnail and modal network failure/retry; no page errors",
+  "PASS: 40 P1 layout checks (5 sizes, 2 themes, 4 tabs), modal fits viewport and traps keyboard focus",
+  "PASS: previously viewed original image and viewer work after offline reload",
+  "PASS: business JSON, SW, manifest and existing JPG byte-identical to P0",
+  "PASS: Claude revision display matrix — open/unowned ordinary thumbnail without data-view; owned l2 viewer; future/unowned and hidden l16 no image; clicking ordinary thumbnail does not mutate storage/coins",
+  "PASS: assets/originals removed from revised P1 tree"
+]
