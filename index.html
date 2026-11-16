@@ -438,7 +438,7 @@ let WEEKS=[],CC=[],GIT=[],GPT=[],GEM=[],GROK=[],DAYS=[],EXTRA=[],PLAN_VERSION=""
 const EXTRA_COIN = 60;
 const LOOKS = [
   {id:"l1",  name:"海岛启程",   desc:"轻盈休闲 · 海岛清晨", price:0, wk:1},
-  {id:"l2",  name:"书房初探",   desc:"温柔针织 · 暖色书房", price:500, wk:2},
+  {id:"l2",  name:"书房初探",   desc:"温柔针织 · 暖色书房", price:500, wk:2, paidCap:300}, // 改价前已开放、按 300 买过，花费按 300 封顶
   {id:"l3",  name:"表格魔法",   desc:"干练衬衫 · 悬浮图表", price:650, wk:3},
   {id:"l4",  name:"汇报女王",   desc:"西装气场 · Boss 周", price:1100, wk:4},
   {id:"l5",  name:"屋顶上线",   desc:"都市摇滚 · 屋顶夜景", price:800, wk:5},
@@ -513,15 +513,14 @@ function loadLocal(){
   try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{}}}
   catch(e){storageOK=false}
 }
-/* 修正：之前购买按钮没防连点，可能同一款扣了两次金币。发现重复就去重并退款。 */
+/* 修正金币花费：价格只涨不降，所以花掉的金币不应该超过「已拥有造型的现价之和」。
+   超出的部分就是多扣的（连点重复购买，或购买记录被另一个打开的窗口覆盖后又买了一次），退回去。 */
 function repairDup(){
-  const o=Array.isArray(PRO.owned)?PRO.owned:[];const cnt={};o.forEach(id=>cnt[id]=(cnt[id]||0)+1);
-  const dups=Object.entries(cnt).filter(([,n])=>n>1); if(!dups.length) return 0;
-  const uniq=[...new Set(o)], paid=uniq.filter(id=>{const L=LOOKS.find(x=>x.id===id);return L&&L.price>0});
-  let refund=0;
-  if(paid.length===1&&dups.length===1){const n=dups[0][1];refund=Math.round((Number(PRO.spent)||0)*(n-1)/n)}
-  else for(const [id,n] of dups){const L=LOOKS.find(x=>x.id===id);refund+=(n-1)*(L?L.price||0:0)}
-  PRO=Object.assign({},PRO,{owned:uniq,spent:Math.max(0,(Number(PRO.spent)||0)-refund)});
+  const uniq=[...new Set(Array.isArray(PRO.owned)?PRO.owned:[])];
+  const sum=uniq.reduce((a,id)=>{const L=LOOKS.find(x=>x.id===id);return a+(L?(L.paidCap??L.price)||0:0)},0);
+  const spent=Number(PRO.spent)||0, refund=Math.max(0,spent-sum);
+  if(!refund&&uniq.length===(PRO.owned||[]).length) return 0;
+  PRO=Object.assign({},PRO,{owned:uniq,spent:spent-refund});
   return refund;
 }
 function saveLocal(){
@@ -927,7 +926,10 @@ document.querySelector(".tabbar").addEventListener("click",ev=>{const b=ev.targe
   if(planReady&&ensureP1())saveLocal();
   derive();if(planReady)render();
   setSave(storageOK?"数据存在本机":"未能存在本机");
-  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")fetchVerified(false)});
+  /* 同一部手机上可能同时开着桌面 App 和浏览器标签：回到页面时先重新读一次本机数据，免得旧窗口把新数据盖掉 */
+  const reload=()=>{loadLocal();if(repairDup())saveLocal();derive();if(planReady)render()};
+  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"){reload();fetchVerified(false)}});
+  window.addEventListener("storage",ev=>{if(ev.key===KEY)reload()});
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
 })();
 
