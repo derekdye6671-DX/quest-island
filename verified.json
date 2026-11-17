@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-16T16:59:43+08:00",
+ "updatedAt": "2026-11-17T14:58:00+08:00",
  "note": "由 Claude 维护：只记任务编号和验收结论，不含个人数据",
  "items": {
   "d_2026-11-09": {
@@ -81,6 +81,11 @@
    "status": "pass",
    "reply": "第一次在本地仓库指挥 Claude Code：会话选中 xiaoxuanzi-channel，三句话总结与仓库一致（10 次提交、docs/ 下 4 篇笔记、技能自测 202 行、还没有 CLAUDE.md），只读未改文件",
    "at": 1794819583689
+  },
+  "d_2026-11-17": {
+   "status": "pass",
+   "reply": "/init 生成 CLAUDE.md 并补规则：CLAUDE.md 含 /init 生成部分 + 5 条项目规则 + 中文版 Karpathy 四条；scripts、assets、practice 各有 .gitkeep，.gitignore 忽略 *.mp4 *.mov 素材/；分两次规范提交（7d3046e docs、3e85d33 chore）并已推送",
+   "at": 1794898468874
   }
  }
 }
