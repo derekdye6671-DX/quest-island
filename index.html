@@ -1073,7 +1073,7 @@ function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 
 
 /* ---------- 读取计划和验收清单 ---------- */
 function loading(msg){document.getElementById("tasks").innerHTML=`<div class="note" style="padding:12px 0">${esc(msg)}</div>`}
-async function getJSON(url){const r=await fetch(url+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);return r.json()}
+async function getJSON(url){const r=await fetch(url+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);const d=await r.json();if(r.headers.get("x-quest-stale"))Object.defineProperty(d,"__stale",{value:true});return d}
 async function fetchPlan(){
   try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);PRODUCT=P.PRODUCT||[];PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
     document.getElementById("planver").textContent=PLAN_VERSION?" · 计划 "+PLAN_VERSION:"";}
@@ -1084,7 +1084,7 @@ async function fetchVerified(manual){
   try{const d=await getJSON("verified.json");const before=planReady?compute():null;VER=d.items||{};derive();
     if(planReady){const after=compute();
       if(lastPass!==null&&before&&after.coins>before.coins)celebrate(before,`Claude 已验收，+${after.coins-before.coins} 🪙`);
-      else{render();if(manual)toast(d.updatedAt?"验收清单已更新到 "+d.updatedAt.slice(5,16).replace("T"," "):"已刷新")}}
+      else{render();if(d.__stale)toast("连不上冒险岛网站，显示的是上次存下的验收清单（"+(d.updatedAt||"").slice(5,16).replace("T"," ")+"）。换个网络再点「刷新验收」");else if(manual)toast(d.updatedAt?"验收清单已更新到 "+d.updatedAt.slice(5,16).replace("T"," "):"已刷新")}}
     lastPass=after_();}
   catch(e){if(manual)toast("没连上网，验收结果先用上次的")}
 }
