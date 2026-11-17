@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-17T14:58:00+08:00",
+ "updatedAt": "2026-11-17T20:30:00+08:00",
  "note": "由 Claude 维护：只记任务编号和验收结论，不含个人数据",
  "items": {
   "d_2026-11-09": {
@@ -86,6 +86,26 @@
    "status": "pass",
    "reply": "/init 生成 CLAUDE.md 并补规则：CLAUDE.md 含 /init 生成部分 + 5 条项目规则 + 中文版 Karpathy 四条；scripts、assets、practice 各有 .gitkeep，.gitignore 忽略 *.mp4 *.mov 素材/；分两次规范提交（7d3046e docs、3e85d33 chore）并已推送",
    "at": 1794898468874
+  },
+  "d_2026-11-18": {
+   "status": "pass",
+   "reply": "11/17 提前完成：Excel 导出 CSV，practice/time.csv（14 行，UTF-8 带 BOM）+ 规划表副本，Claude Code 以 feat: 提交（50f3042）",
+   "at": 1794918036115
+  },
+  "d_2026-11-19": {
+   "status": "pass",
+   "reply": "11/17 提前完成：网页改 README（dce9426）→ Fetch → Pull 拉回本地；自己用 GitHub Desktop 提交 docs:（cd7ffc7）和 chore:（34ded97 忽略 Excel 临时文件 ~$*）并推送",
+   "at": 1794918036115
+  },
+  "w2_quest": {
+   "status": "pass",
+   "reply": "11月17日验收：CLAUDE.md（/init + 5 条项目规则 + 中文版四条规则）、scripts/assets/practice 三个目录和 .gitignore、practice/time.csv；Claude Code 规范提交 3 次（7d3046e、3e85d33、50f3042）",
+   "at": 1794918036115
+  },
+  "w2_git": {
+   "status": "pass",
+   "reply": "11月17日验收：本周规范提交 6 次，其中网页 1 次（dce9426）、自己用 GitHub Desktop 2 次（cd7ffc7、34ded97）；完成 Fetch → Pull 拉取；能凭 Co-Authored-By 分清 Claude Code 的提交。待修：README 目录说明还是占位符，格式被转义",
+   "at": 1794918036115
   }
  }
 }
