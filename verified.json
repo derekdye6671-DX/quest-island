@@ -1,5 +1,5 @@
 {
- "updatedAt": "2026-11-22T21:42:00+08:00",
+ "updatedAt": "2026-11-22T14:06:00+08:00",
  "note": "由 Claude 维护：只记任务编号和验收结论，不含个人数据",
  "items": {
   "d_2026-11-09": {
@@ -116,6 +116,16 @@
    "status": "pass",
    "reply": "用 History 读历史：说清一条提交能看到编号、日期、Summary、提交人和红绿改动；核对 17 次提交，7d3046e、3e85d33、50f3042 带 Claude 共同作者（Claude Code 做的），其余是自己做的，与仓库记录一致",
    "at": 1795326176866
+  },
+  "d_2026-11-21": {
+   "status": "pass",
+   "reply": "Gemini 横幅 + README 美化：assets/banner.png 1280×640，README 第一行显示横幅，用标题、列表、5 个相对链接（均能打开）重写，修好原来坏掉的「## 仓库目录」；Desktop 提交 5460cf2 并推送",
+   "at": 1795327609558
+  },
+  "w2_m_gem": {
+   "status": "pass",
+   "reply": "11月22日验收：Gemini 生成仓库横幅，xiaoxuanzi-channel 拼写正确，存成 assets/banner.png（1280×640），README 顶部显示正常（提交 5460cf2）",
+   "at": 1795327609558
   }
  }
 }
