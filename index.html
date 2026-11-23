@@ -556,7 +556,7 @@ const WEEKLY = [
   {id:"m_gem", ico:"✨", name:"Gemini 交付",      coin:25,  stat:"智识", who:"claude"},
   {id:"m_grok",ico:"⚡", name:"Grok 交付",        coin:25,  stat:"智识", who:"claude"},
   {id:"pub",   ico:"🎬", name:"发一条视频（可选）", coin:80,  stat:"创作", opt:true},
-  {id:"review",ico:"📝", name:"周复盘五行",       coin:30,  stat:"意志"}
+  {id:"review",ico:"📝", name:"周复盘六行",       coin:30,  stat:"意志"}
 ];
 const STATS = ["体力","语言","创作","技术","智识","意志"];
 const LEVELS = [0,150,400,750,1200,1750,2400,3200,4100,5100,6300,7600,9000];
@@ -909,7 +909,7 @@ function render(){
   const w=Math.min(Math.max(wk,1),12), we=S.weekly[w]||{};
   document.getElementById("wklabel").textContent=`第 ${w} 周 · ${W.t}（${W.d}）${W.boss?" · ⚔️ Boss 周，两关奖励翻倍，两关都过才算打败 Boss":""}${W.hol?" · 🎄 "+W.hol:""}`;
   const SRC={quest:CC, git:GIT, m_gpt:GPT, m_gem:GEM, m_grok:GROK};
-  const desc={pub:W.v, review:"五行：做得好的 / 卡住的 / 下周改什么 / 本周实际花了多少小时 / 三个模型谁做得好、谁出过错"+(W.boss?"。Boss 周加一问：这件作品值不值得做成一期视频或小产品":"")+(W.rq?"。本周复盘还要单独讨论："+W.rq.map((x,i)=>(i+1)+"）"+x).join(" "):"")};
+  const desc={pub:W.v, review:"六行：做得好的 / 卡住的 / 下周改什么 / 如何更改 / 本周实际花了多少小时 / 三个模型谁做得好、谁出过错"+(W.boss?"。Boss 周加一问：这件作品值不值得做成一期视频或小产品":"")+(W.rq?"。本周复盘还要单独讨论："+W.rq.map((x,i)=>(i+1)+"）"+x).join(" "):"")};
   document.getElementById("weekly").innerHTML=WEEKLY.map(t=>{
     const coin=t.boss&&W.boss?t.coin*2:t.coin;
     const head=`<div><span style="font-size:20px">${t.ico}</span> <b>${t.name}</b> <span class="note">+${coin} 🪙</span></div>`;
