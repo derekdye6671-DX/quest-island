@@ -265,6 +265,17 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .vnote.bad{background:var(--gold-soft);color:var(--warn)}
 .task .vnote{margin-top:6px;font-size:12px;border-radius:8px;padding:6px 8px;background:var(--bg);color:var(--muted)}
 .task .vnote.ok{background:var(--ok-soft);color:var(--ok)} .task .vnote.bad{background:var(--gold-soft);color:var(--warn)}
+.tmpform{display:grid;gap:8px;margin-top:8px}
+.tmpform label{font-size:13px;font-weight:600;display:grid;gap:4px;min-width:0}
+.tmpform input,.tmpform textarea,.tmpform select,.fit0 input{width:100%;box-sizing:border-box;font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;background:var(--panel);color:var(--ink)}
+.tmpform textarea{min-height:60px;resize:vertical}
+.tmpform .row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.tmplist{display:grid;gap:8px;margin-top:8px}
+.tmpwarn{font-size:13px;font-weight:600;color:var(--danger);background:var(--danger-soft);border-radius:9px;padding:6px 10px;margin-top:6px}
+.tag.hi{background:var(--danger-soft);color:var(--danger)} .tag.mid{background:var(--brand-soft);color:var(--brand-strong)} .tag.lo{background:var(--bg);color:var(--muted)}
+.due{font-size:12px;color:var(--muted)} .due.soon{color:var(--gold-ink);font-weight:600} .due.over{color:var(--danger);font-weight:600}
+.fit0{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fit0 label{font-size:12px;color:var(--muted);display:grid;gap:3px;min-width:0}
 .ov-box.fm{max-width:420px;text-align:left;padding:16px}
 .ov-box.fm .t{font-size:20px;margin:0 0 6px}
 .ov-box.fm p{margin:0 0 10px}
@@ -410,6 +421,28 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
     </section>
   </div>
 
+  <section class="panel" data-tab="today" id="tmpPanel">
+    <h2>临时任务 <small>随时添加 · 不给金币，不算全勤</small></h2>
+    <div id="tmpWarn"></div>
+    <div class="tmplist" id="tmpList"></div>
+    <details id="tmpAdd" style="margin-top:10px"><summary>＋ 添加临时任务</summary>
+      <div class="tmpform">
+        <label>任务名称<input type="text" id="tName" maxlength="40" placeholder="比如：给同事回 PPT 修改意见"></label>
+        <label>说明（可不填）<textarea id="tDesc" maxlength="300" placeholder="做什么、做到什么程度"></textarea></label>
+        <div class="row3">
+          <label>类型<select id="tType"><option value="c">自己打卡</option><option value="t">计数或计时</option><option value="v">需要 Claude 验收</option></select></label>
+          <label>紧急度<select id="tUrg"><option value="hi">紧急</option><option value="mid" selected>一般</option><option value="lo">不急</option></select></label>
+          <label>截止日期<input type="date" id="tDue"></label>
+        </div>
+        <div class="row3" id="tGoalRow" hidden>
+          <label>目标数<input type="number" id="tGoal" min="1" max="100000" inputmode="numeric" placeholder="30"></label>
+          <label>单位<input type="text" id="tUnit" maxlength="8" placeholder="分钟 / 个 / 页"></label>
+        </div>
+        <button class="xbtn yes" id="tAddBtn" style="margin-left:0">添加</button>
+      </div>
+    </details>
+  </section>
+
   <section class="panel" data-tab="adventure">
     <h2>本周任务 <small id="wklabel" tabindex="-1"></small></h2>
     <div id="extraBox"></div>
@@ -444,7 +477,7 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
   </section>
 
   <section class="panel" data-tab="adventure">
-    <h2>12 周冒险地图 <small>📦 要交出 · 🗝️ Claude Code · 🐙 GitHub · 🤖 ChatGPT · ✨ Gemini · ⚡ Grok · 🎬 视频（可选）· 🗣️ 英语</small></h2>
+    <h2>12 周冒险地图 <small>📦 要交出 · 🎬 内容 · 🗝️ Claude Code · 🐙 GitHub · 🤖 AI 协作（第 1–2 周：🤖 ChatGPT · ✨ Gemini · ⚡ Grok）· 📦 产品 · 🗣️ 英语</small></h2>
     <button type="button" class="map-jump" id="goCurrentWeek">前往本周任务 ↑</button>
     <div class="map" id="map"></div>
   </section>
@@ -483,19 +516,21 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
     <div class="rules">
       <div><b>🧭 第一原则</b>把「学多少技术」让位于「你能否独立用起来」。凡是要敲命令的步骤都由 Claude Code 执行，你看懂并批准；你要会的是启动工具、准备输入、判断结果、出错时停下并恢复。</div>
       <div><b>📦 放哪个仓库</b>作品、脚本、网页放 xiaoxuanzi-channel（公开）；计划、进度、交接放 ai-12week-lab（私有）。任务里没特别说明的「仓库」都指 xiaoxuanzi-channel。真实健康数据、工作资料不进任何仓库，练习用模拟数据。</div>
-      <div><b>📋 每日 5 项</b>晨练（100 个简易波比 + 一组自重力量，两项都做完）、12000 步、控制饮食、ChatGPT 英语、主技术块。剪映不再每日必做。</div>
+      <div><b>📋 每日 6 项</b>晨练（100 个简易波比 + 一组自重力量，两项都做完；去健身房的日子可用健身房训练代替）、12000 步、控制饮食、ChatGPT 英语、今日主任务、睡前拉伸 20 分钟（第 3 周 11/23 起；之前的日子按当时的 5 项结算）。</div>
       <div><b>🦵 酸痛日</b>可以用不少于 1 小时的健步走代替力量；步数仍要满 12000，波比能做还是做。</div>
-      <div><b>🗝️ 主技术块</b>通勤学 + 回家动手 45–60 分钟，内容必须对应当周地图。提交当天成果，Claude 确认后才发 50 金币，未验收不算全勤。</div>
+      <div><b>🗝️ 今日主任务</b>原「主技术块」。每天从内容、产品、技术里安排一件：第 3、4 周按计划里的每日安排，第 5 周起每周日复盘时由 Claude 排出下一周。提交当天成果，Claude 确认后才发 50 金币，未验收不算全勤。</div>
       <div><b>🗣️ 英语</b>每周至少 5 天。这周已经练满 5 天后，其余日子不练英语也不影响全勤。</div>
       <div><b>🎯 全勤连击</b>当天应做项全部完成 +15；连续 7 天全勤再 +60。</div>
-      <div><b>👑 周任务</b>Claude Code 关 +100、GitHub 关 +80；第 4、8、12 周是 Boss 周，两关奖励翻倍，两关都过才算打败 Boss。</div>
-      <div><b>🤖 指定模型交付</b>ChatGPT、Gemini、Grok 每周各一个具体任务，要交出可保存的文件或截图，各 +25。</div>
-      <div><b>🔍 验收</b>所有验收类任务（主技术块、Claude Code 关、GitHub 关、ChatGPT / Gemini / Grok 交付）都由 Claude 确认：按任务里写的「验收证明」发给 Claude，确认后才发金币。</div>
-      <div><b>🎯 产品任务优先</b>产品相关任务按顺序做：E33 小红书调研 → 第 5 周产品化第一步 → 第 7 周大纲、定价、合规 → 第 10 周接入 AI → 第 11 周收尾。每完成一项，页面会问要不要把下一项提前到本周；提前后原来那一周留作缓冲。产品任务全部做完之前，拓展任务暂停发放。每周的 Claude Code 关、GitHub 关照常做。</div>
+      <div><b>👑 周任务</b>第 3 周起：🎬 内容关 +100（必做）、Claude Code 关 +100、🐙 GitHub 关 +100（必做，最高优先级，和内容关同权重）、AI 协作关 +75、游泳 ≥2500 米 + 健身房 ≥2 次 +40、周复盘 +30。第 4、8、12 周是 Boss 周，Claude Code 关和 GitHub 关奖励翻倍，两关都过才算打败 Boss。</div>
+      <div><b>🤖 AI 协作关</b>第 3 周起，原来 ChatGPT、Gemini、Grok 三个交付合并成一关：每周一家 AI 做主角（卡片上写着），其余 AI 做小任务，合起来交一次验收。第 1–2 周的三个交付按原样保留。</div>
+      <div><b>🔍 验收</b>所有验收类任务（今日主任务、内容关、Claude Code 关、GitHub 关、AI 协作关、产品关）都由 Claude 确认：按任务里写的「验收证明」发给 Claude，确认后才发金币。</div>
+      <div><b>🎯 产品任务优先</b>产品相关任务按顺序做：P1 小红书调研（E33，第 3 周粗查、第 4 周补完）→ P2 第 5 周产品化第一步 → P3 第 7 周大纲、定价、合规 → P4 第 10 周接入 AI → P5 第 11 周收尾 → P6 第 12 周上架。每完成一项，页面会问要不要把下一项提前到本周；提前后原来那一周留作缓冲。产品任务全部做完之前，拓展任务暂停发放。每周的 Claude Code 关、GitHub 关照常做。</div>
       <div><b>🧩 任务都是具体的</b>每个任务都写了具体步骤、交付物和验收证明。照着步骤做，每一步都对应一个要学会的实际操作。</div>
-      <div><b>🎬 视频可选</b>主题是「没有计算机背景的普通打工人用 AI 做事」，12 周建议 4–6 条。不做视频不影响全勤，也不挡技术关。</div>
-      <div><b>🎄 节日周</b>第 7、8 周跨圣诞和元旦，视频可停，技术关不取消，周末实战块可以放到假期，截止仍是当周最后一天。</div>
-      <div><b>🧱 卡关怎么办</b>一个问题卡了 60 分钟就停手，把报错截图发给 Claude，不硬耗。进度落后时按这个顺序先放：视频 → 拓展任务 → 模型交付；Claude Code 关、GitHub 关和每日主技术块不放。</div>
+      <div><b>🎬 视频必做</b>主题是「没有计算机背景的普通打工人用 AI 做事」。首条 11/30–12/06 发布，之后每周至少 1 条：先 B站，再剪抖音短版。内容关每周必做。</div>
+      <div><b>🎄 节日周</b>第 7、8 周跨圣诞和元旦，任务可以做短，但视频不断更，截止仍是当周最后一天。</div>
+      <div><b>🧱 卡关怎么办</b>一个问题卡了 60 分钟就停手，把报错截图发给 Claude，不硬耗。BOSS 卡住可以顺延一周，但视频不能停；进度落后时先放拓展任务，内容关、GitHub 关和每日今日主任务不放。</div>
+      <div><b>📌 临时任务</b>在「今天」页最下面随时添加：填名称和说明、类型（自己打卡 / 计数或计时 / 需要 Claude 验收）、紧急度和截止日期，快到期（2 天内）和过期会提醒。临时任务不给金币，也不算全勤；需要验收的照常点「提交验收」。</div>
+      <div><b>💪 起点测试</b>第 3 周和第 12 周测引体向上、双杠臂屈伸、俯卧撑个数，只存在这台手机（会进备份文件），不提交给 Claude，不进任何仓库。</div>
       <div><b>🔙 补打卡</b>只能补记前两天，再往前就锁定。</div>
       <div><b>🖱️ 铁律：GitHub 操作优先用 GitHub Desktop</b>所有涉及 GitHub 的操作（建仓库、克隆、提交、推送、拉取、分支、发 Pull Request）一律先给 GitHub Desktop 的点按钮做法；Desktop 做不到的（如 Pages、Issues、Actions、Release、仓库设置）才用网页，不要求你敲 Git 命令。Claude Code 自己会运行 Git 命令，你只需看懂并批准。这条适用于以后每一个 12 周计划。</div>
     </div>
@@ -537,19 +572,27 @@ const OLD_DAILY = [
   {id:"ai",   ico:"🧠", name:"用其他 AI 做一件事", kind:"c", coin:10, stat:"智识", meta:"打卡"},
   {id:"cc",   ico:"🗝️", name:"Claude Code / GitHub 练习", kind:"v", coin:35, stat:"技术", meta:"验收 · Claude 确认后发金币"}
 ];
-const DAILY = [
+const REV2 = "2026-11-23";  // 计划 v3.1 生效日（第 3 周起）：每日 6 项；之前的日子按 5 项结算
+const DAILY_V2 = [
   {id:"fit",  ico:"💪", name:"晨练：波比 + 力量", kind:"c", coin:20, stat:"体力", meta:"打卡 · 100 个简易波比 + 一组自重力量（俯卧撑 15、深蹲 20、平板支撑 45 秒、弓步每条腿 10），两项都做完；酸痛日可用 ≥1 小时健步走代替力量"},
   {id:"steps",ico:"👟", name:"12000 步", kind:"t", goal:12000, unit:"步", coin:15, stat:"体力", meta:"计数 · 以手机或手环为准，满 12000 才算"},
   {id:"diet", ico:"🥗", name:"控制饮食", kind:"c", coin:10, stat:"体力", meta:"打卡 · 按自己的饮食计划执行并记下"},
   {id:"eng",  ico:"🗣️", name:"ChatGPT 英语", kind:"c", coin:20, stat:"语言", meta:"打卡 · 固定流程：让 ChatGPT 扮演本周场景里的对方，英文对话 10 轮 → 让它列出你的 3 个错误 → 你把这 3 句改对后重说一遍；每周至少 5 天"},
-  {id:"cc",   ico:"🗝️", name:"主技术块", kind:"v", coin:50, stat:"技术", meta:"验收 · 按下面「今天的任务」做，通勤学 + 回家动手 45–60 分钟，把证明发给 Claude"}
+  {id:"cc",   ico:"🗝️", name:"今日主任务", kind:"v", coin:50, stat:"技术", meta:"验收 · 按下面「今天的任务」做，把证明发给 Claude"}
+];
+const DAILY = [
+  {id:"fit",  ico:"💪", name:"晨练：波比 + 力量", kind:"c", coin:20, stat:"体力", meta:"打卡 · 100 个简易波比 + 一组自重力量（俯卧撑 15、深蹲 20、平板支撑 45 秒、弓步每条腿 10），两项都做完；酸痛日可用 ≥1 小时健步走代替力量；去健身房的日子可用健身房训练代替"},
+  DAILY_V2[1], DAILY_V2[2], DAILY_V2[3],
+  {id:"cc",   ico:"🗝️", name:"今日主任务", kind:"v", coin:50, stat:"技术", meta:"验收 · 每天从内容、产品、技术里安排一件，按下面「今天的任务」做，把证明发给 Claude"},
+  {id:"str",  ico:"🧘", name:"睡前拉伸 20 分钟", kind:"c", coin:10, stat:"体力", meta:"打卡 · 睡前拉伸满 20 分钟"}
 ];
 // 修订前就有的旧任务记录（如剪映分钟、其他 AI 打卡）：已记下的照旧计金币，但不再算全勤
 const LEGACY_EXTRA = [
   {id:"edit", kind:"t", goal:30, coin:20, stat:"创作"},
   {id:"ai",   kind:"c", coin:10, stat:"智识"}
 ];
-const WEEKLY = [
+// 第 1–2 周的周任务（已结算，不改）
+const WEEKLY_OLD = [
   {id:"quest", ico:"🗝️", name:"周 Claude Code 关", coin:100, stat:"技术", who:"claude", boss:true},
   {id:"git",   ico:"🐙", name:"周 GitHub 关",      coin:80,  stat:"技术", who:"claude", boss:true},
   {id:"m_gpt", ico:"🤖", name:"ChatGPT 交付",     coin:25,  stat:"智识", who:"claude"},
@@ -558,24 +601,37 @@ const WEEKLY = [
   {id:"pub",   ico:"🎬", name:"发一条视频（可选）", coin:80,  stat:"创作", opt:true},
   {id:"review",ico:"📝", name:"周复盘六行",       coin:30,  stat:"意志"}
 ];
+// 第 3 周起（计划 v3.1）：内容关必做；三个 AI 关合并成 AI 协作关；GitHub 关和内容关同权重
+const WEEKLY_NEW = [
+  {id:"content",ico:"🎬", name:"内容关",          coin:100, stat:"创作", who:"claude"},
+  {id:"quest", ico:"🗝️", name:"Claude Code 关",  coin:100, stat:"技术", who:"claude", boss:true},
+  {id:"git",   ico:"🐙", name:"GitHub 关",       coin:100, stat:"技术", who:"claude", boss:true},
+  {id:"m_ai",  ico:"🤖", name:"AI 协作关",        coin:75,  stat:"智识", who:"claude"},
+  {id:"prod",  ico:"📦", name:"产品关",          coin:100, stat:"智识", who:"claude"},  // 只在 plan.json 的 PROD 有内容的那一周出现
+  {id:"swim",  ico:"🏊", name:"游泳 ≥2500 米 + 健身房 ≥2 次", coin:40, stat:"体力"},
+  {id:"review",ico:"📝", name:"周复盘六行",       coin:30,  stat:"意志"}
+];
+const WEEKLY = [...WEEKLY_OLD, ...WEEKLY_NEW.filter(t=>!WEEKLY_OLD.some(o=>o.id===t.id))]; // 所有出现过的周任务（导出用）
+const weeklyFor = w => w<=2 ? WEEKLY_OLD : WEEKLY_NEW.filter(t=>t.id!=="prod"||PROD_W[w-1]);
 const STATS = ["体力","语言","创作","技术","智识","意志"];
 const LEVELS = [0,150,400,750,1200,1750,2400,3200,4100,5100,6300,7600,9000];
 const TITLES = ["新手村民","见习冒险者","晨练学徒","剪辑新秀","双语旅人","AI 学者","工具匠人","频道开拓者","Skill 炼金师","一人公司船长","自律骑士","十二周传奇","冒险岛之王"];
-let WEEKS=[],CC=[],GIT=[],GPT=[],GEM=[],GROK=[],DAYS=[],EXTRA=[],PLAN_VERSION="";
+let WEEKS=[],CC=[],GIT=[],GPT=[],GEM=[],GROK=[],CONTENT=[],AI=[],PROD_W=[],DAYS=[],EXTRA=[],PLAN_VERSION="";
+const srcOf = id => ({quest:CC,git:GIT,m_gpt:GPT,m_gem:GEM,m_grok:GROK,content:CONTENT,m_ai:AI,prod:PROD_W})[id];
 const EXTRA_COIN = 60;
 const LOOKS = [
   {id:"l1",  name:"海岛启程",   desc:"轻盈休闲 · 海岛清晨", price:0, wk:1},
   {id:"l2",  name:"书房初探",   desc:"温柔针织 · 暖色书房", price:500, wk:2, paidCap:300}, // 改价前已开放、按 300 买过，花费按 300 封顶
   {id:"l3",  name:"表格魔法",   desc:"干练衬衫 · 悬浮图表", price:650, wk:3},
-  {id:"l4",  name:"汇报女王",   desc:"西装气场 · Boss 周", price:1100, wk:4},
-  {id:"l5",  name:"屋顶上线",   desc:"都市摇滚 · 屋顶夜景", price:800, wk:5},
-  {id:"l6",  name:"符文法师",   desc:"神秘幻想 · 符文卡片", price:950, wk:6},
-  {id:"l7",  name:"圣诞看板",   desc:"节庆丝绒 · 看板墙", price:1050, wk:7},
-  {id:"l8",  name:"跨年烟火",   desc:"晚宴盛装 · Boss 周", price:1500, wk:8},
-  {id:"l9",  name:"齿轮工坊",   desc:"机能工业 · 机器人", price:1150, wk:9},
-  {id:"l10", name:"群岛之桥",   desc:"复古飞行 · 海桥", price:1250, wk:10},
-  {id:"l11", name:"作品展台",   desc:"画廊都会 · 个人展台", price:1350, wk:11},
-  {id:"l12", name:"山顶日出",   desc:"冒险终章 · Boss 周", price:2500, wk:12},
+  {id:"l4",  name:"汇报女王",   desc:"西装气场 · Boss 周", price:1400, wk:4},
+  {id:"l5",  name:"屋顶上线",   desc:"都市摇滚 · 屋顶夜景", price:1050, wk:5},
+  {id:"l6",  name:"符文法师",   desc:"神秘幻想 · 符文卡片", price:1250, wk:6},
+  {id:"l7",  name:"圣诞看板",   desc:"节庆丝绒 · 看板墙", price:1350, wk:7},
+  {id:"l8",  name:"跨年烟火",   desc:"晚宴盛装 · Boss 周", price:1950, wk:8},
+  {id:"l9",  name:"齿轮工坊",   desc:"机能工业 · 机器人", price:1500, wk:9},
+  {id:"l10", name:"群岛之桥",   desc:"复古飞行 · 海桥", price:1600, wk:10},
+  {id:"l11", name:"作品展台",   desc:"画廊都会 · 个人展台", price:1750, wk:11},
+  {id:"l12", name:"山顶日出",   desc:"冒险终章 · Boss 周", price:3200, wk:12},
   {id:"l13", name:"晨练达人",   desc:"晨练累计 30 天自动解锁", auto:x=>x.fitDays>=30, cond:"晨练 "},
   {id:"l14", name:"英语旅人",   desc:"英语累计 30 天自动解锁", auto:x=>x.engDays>=30, cond:"英语 "},
   {id:"l15", name:"拓展探险家", desc:"完成 5 个拓展任务自动解锁", auto:x=>x.extrasDone>=5, cond:"拓展 "},
@@ -610,7 +666,7 @@ function weekOf(s){return Math.floor(diffDays(START,s)/7)+1}
 function fmtDate(s){const[y,m,d]=s.split("-").map(Number);const w="日一二三四五六"[new Date(y,m-1,d).getDay()];return `${m}月${d}日 周${w}`}
 const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-const rulesFor = day => day<REV?OLD_DAILY:DAILY;
+const rulesFor = day => day<REV?OLD_DAILY:day<REV2?DAILY_V2:DAILY;
 function dayTask(day){const w=weekOf(day);if(w<1||w>12)return null;const[y,m,d]=day.split("-").map(Number);return DAYS[w-1][(new Date(y,m-1,d).getDay()+6)%7]}
 function taskBox(T,coin){return `<div class="q"><b>${esc(T.t)}</b></div><details class="steps"><summary>具体步骤（${T.s.length} 步）</summary><ol>${T.s.map(x=>`<li>${esc(x)}</li>`).join("")}</ol></details><div class="vnote">📦 交付：${esc(T.d)}<br>📎 验收证明：${esc(T.p)}</div>`}
 function done(t,e,day){if(t.kind==="v")return !!VD[day];if(!e)return false;const v=e[t.id];return t.kind==="t"?(Number(v)||0)>=t.goal:!!v}
@@ -620,7 +676,7 @@ function isLeave(day){return !!(S.log[day]&&S.log[day].leave)}
 function dayFull(day){const e=S.log[day];if(isLeave(day))return false;return rulesFor(day).filter(t=>required(t,day)).every(t=>done(t,e,day))}
 const extraOf = id => EXTRA.find(x=>x.id===id);
 const assignedIds = () => Object.values(S.extra).flat();
-function nextExtra(w){const used=new Set(assignedIds());return EXTRA.find(x=>!used.has(x.id)&&x.min<=w)}
+function nextExtra(w){const used=new Set(assignedIds());return EXTRA.find(x=>!used.has(x.id)&&!x.later&&x.min<=w)}
 function coreDone(w){return !!(V[w]&&VG[w])}
 function weeklyOK(t,w){const e=S.weekly[w]||{};if(t.who==="claude")return !!claudeOK(t.id,w);return !!e[t.id]}
 
@@ -628,16 +684,16 @@ function weeklyOK(t,w){const e=S.weekly[w]||{};if(t.who==="claude")return !!clau
    打卡、衣橱、提交记录：只存在这台设备的浏览器里（localStorage）
    plan.json      计划，放在仓库里，Claude 维护
    verified.json  验收清单，放在仓库里，Claude 验收后更新；只有任务编号和一句结论
-   键：d_<日期>（主技术块）、w<周>_<任务>（周任务）、x_<编号>（拓展） */
+   键：d_<日期>（今日主任务）、w<周>_<任务>（周任务）、x_<编号>（拓展）、t_<编号>（临时任务） */
 const KEY="quest-island-v1";
-let LOG={}, WK={}, EX={}, SUB={}, PRO={}, VER={}, PR={}, PRODUCT=[];
+let LOG={}, WK={}, EX={}, SUB={}, PRO={}, VER={}, PR={}, TMP={}, FIT={}, PRODUCT=[];
 let S={log:{},weekly:{},owned:[],look:"l1",spent:0,real:{},extra:{},extraNo:{}};
-let V={}, VG={}, VD={}, VM={}, VE={};
+let V={}, VG={}, VD={}, VM={}, VE={}, VT={};
 const claudeOK=(id,w)=>id==="quest"?V[w]:id==="git"?VG[w]:(VM[w]&&VM[w][id]);
 let canWrite=true, planReady=false, viewDate=todayStr(), storageOK=true;
 
 function loadLocal(){
-  try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{}}}
+  try{const raw=localStorage.getItem(KEY);if(raw){const d=JSON.parse(raw);LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{};TMP=d.tmp||{};FIT=d.fit||{}}}
   catch(e){storageOK=false}
 }
 /* 修正金币花费：价格只涨不降，所以花掉的金币不应该超过「已拥有造型的现价之和」。
@@ -651,7 +707,7 @@ function repairDup(){
   return refund;
 }
 function saveLocal(){
-  try{localStorage.setItem(KEY,JSON.stringify({v:1,log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR,savedAt:Date.now()}));setSave("已保存在本机 ✓")}
+  try{localStorage.setItem(KEY,JSON.stringify({v:1,log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR,tmp:TMP,fit:FIT,savedAt:Date.now()}));setSave("已保存在本机 ✓")}
   catch(e){storageOK=false;setSave("这台设备存不了数据，请导出备份");toast("这次没存上，请先导出备份")}
 }
 function setSave(txt){document.getElementById("savestate").textContent=txt}
@@ -661,13 +717,14 @@ function subOf(key){const v=VER[key];if(v&&(v.status==="pass"||v.status==="fail"
 function derive(){
   S={log:LOG, weekly:{}, owned:Array.isArray(PRO.owned)?PRO.owned:[], look:PRO.look||"l1", spent:Number(PRO.spent)||0,
      real:(PRO.real&&typeof PRO.real==="object")?PRO.real:{}, extra:{}, extraNo:{}};
-  for(const [w,e] of Object.entries(WK)){S.weekly[w]={pub:!!e.pub,review:!!e.review};if(e.no)S.extraNo[w]=true}
+  for(const [w,e] of Object.entries(WK)){S.weekly[w]={pub:!!e.pub,review:!!e.review,swim:!!e.swim};if(e.no)S.extraNo[w]=true}
   for(const [id,x] of Object.entries(EX).sort((a,b)=>(a[1].at||0)-(b[1].at||0))) (S.extra[x.week]||(S.extra[x.week]=[])).push(id);
-  V={};VG={};VD={};VM={};VE={};
+  V={};VG={};VD={};VM={};VE={};VT={};
   for(const [key,s] of Object.entries(VER)){if(!s||s.status!=="pass")continue;const r=s.reply||"已验收";
     let m;
     if(m=key.match(/^d_(\d{4}-\d{2}-\d{2})$/))VD[m[1]]=r;
     else if(m=key.match(/^x_(E\d+)$/))VE[m[1]]=r;
+    else if(m=key.match(/^t_(\w+)$/))VT[m[1]]=r;
     else if(m=key.match(/^w(\d+)_(\w+)$/)){const w=+m[1],id=m[2];if(id==="quest")V[w]=r;else if(id==="git")VG[w]=r;else (VM[w]||(VM[w]={}))[id]=r}}
 }
 
@@ -684,14 +741,15 @@ function subBlock(key,ok,kind,ref,w,title,proof){
   return subNote(s)+`<button data-open="${key}|${kind}|${ref}|${w}">${s&&s.status==="fail"?"重新提交":"提交验收"}</button>`;
 }
 function proofFor(kind,ref,w){
-  if(kind==="day"){const D=dayTask(ref);return D?{t:"主技术块："+D.t,p:D.p||""}:{t:"主技术块",p:""}}
+  if(kind==="day"){const D=dayTask(ref);return D?{t:"今日主任务："+D.t,p:D.p||""}:{t:"今日主任务",p:""}}
+  if(kind==="tmp"){const T=TMP[ref];return {t:"临时任务："+(T?T.name:ref),p:T&&T.desc?T.desc:""}}
   if(kind==="extra"){const T=extraOf(ref);return {t:"拓展 "+ref+"："+(T?T.t:""),p:T?T.p:""}}
-  const SRC={quest:CC,git:GIT,m_gpt:GPT,m_gem:GEM,m_grok:GROK}[ref];const T=SRC&&SRC[w-1];
+  const SRC=srcOf(ref);const T=SRC&&SRC[w-1];
   return {t:(WEEKLY.find(x=>x.id===ref)||{}).name+"："+(T?T.t:""),p:T?T.p:""};
 }
 function requestText(key){
   const s=SUB[key];if(!s)return "";const P=proofFor(s.kind,s.ref,s.week);
-  const when=s.kind==="day"?s.ref+" ":"第 "+s.week+" 周 ";
+  const when=s.kind==="day"?s.ref+" ":s.kind==="tmp"?"":"第 "+s.week+" 周 ";
   return `【验收申请】${when}${P.t}\n编号：${key}${s.url?"\n网址："+s.url:""}${s.note?"\n说明："+s.note:""}`;
 }
 async function copyRequest(key){
@@ -733,7 +791,7 @@ function compute(){
   const bossW=[];
   for(let wk=1;wk<=12;wk++){
     const B=WEEKS[wk-1].boss;
-    for(const t of WEEKLY) if(weeklyOK(t,wk)) add(t.boss&&B?t.coin*2:t.coin,t.stat);
+    for(const t of weeklyFor(wk)) if(weeklyOK(t,wk)) add(t.boss&&B?t.coin*2:t.coin,t.stat);
     if(B&&V[wk]&&VG[wk]) bossW.push(wk);
     for(const id of (S.extra[wk]||[])) if(VE[id]) add(EXTRA_COIN,"技术");
   }
@@ -744,7 +802,7 @@ function compute(){
   while(dayFull(d)||(isLeave(d)&&d>START)){if(dayFull(d))streak++;d=addDays(d,-1)}
   const xp=coins;
   let lv=0; while(lv+1<LEVELS.length&&xp>=LEVELS[lv+1]) lv++;
-  const pubs=Object.values(S.weekly).filter(e=>e&&e.pub).length;
+  const pubs=Object.values(S.weekly).filter(e=>e&&e.pub).length+Object.keys(VM).filter(w=>+w>=4&&VM[w].content).length; // 第 4 周起内容关 = 发布视频
   const lastFull=dayFull(todayStr())||dayFull(addDays(todayStr(),-1));
   const mood=streak>=7?"star":streak>=1?"smile":(Object.keys(S.log).length&&!lastFull?"sad":"calm");
   const cnt=id=>Object.keys(S.log).filter(d=>{const t=rulesFor(d).find(r=>r.id===id);return t&&done(t,S.log[d],d)}).length;
@@ -812,10 +870,9 @@ function ensureP1(){const now=Math.min(Math.max(weekOf(todayStr()),1),12);
   for(const p of PRODUCT) if(p.kind==="extra"&&!EX[p.ref]&&now>=p.home){EX[p.ref]={week:now,at:Date.now(),product:true};return true}
   return false}
 function prodCards(w){
-  const SRC={quest:CC,git:GIT,m_gpt:GPT,m_gem:GEM,m_grok:GROK};
   return PRODUCT.filter(p=>p.kind!=="extra"&&PR[p.id]===w&&p.week!==w).map(p=>
     `<div class="pgroup"><div class="ptitle">🎯 提前的产品任务 · 原第 ${p.week} 周：${esc(p.t)}</div><div class="wk">`+
-    p.keys.map(k=>{const t=WEEKLY.find(x=>x.id===k),T=SRC[k][p.week-1],v=claudeOK(k,p.week);
+    p.keys.map(k=>{const t=WEEKLY.find(x=>x.id===k),T=srcOf(k)[p.week-1],v=claudeOK(k,p.week);if(!T)return "";
       return `<div class="wcard pcard"><div><span style="font-size:20px">${t.ico}</span> <b>${t.name}</b> <span class="note">+${t.coin} 🪙</span></div>${taskBox(T,t.coin)}${subBlock("w"+p.week+"_"+k,!!v,"week",k,p.week,T.t,T.p)}</div>`}).join("")+`</div></div>`).join("");
 }
 function prodBanner(w){
@@ -849,8 +906,43 @@ function extraBanner(w){
   return `<div class="xbar strong">🎉 本周核心关卡已完成${mine.length?`，拓展任务也做完了 ${mine.length} 个`:""}！要再加一个本周任务吗？<br><span class="note">下一个：${n.id}「${esc(n.t)}」· ${esc(n.area)} · +${EXTRA_COIN} 🪙</span><span class="xrow"><button class="xbtn yes" data-xadd="${n.id}">是，加一个</button><button class="xbtn" data-xno="${w}">暂不</button></span></div>`;
 }
 
+/* ---------- 起点测试（只存这台设备，不进验收清单和任何仓库） ---------- */
+const FIT_WEEKS=[3,12], FIT_ITEMS=[["pull","引体向上"],["dip","双杠臂屈伸"],["push","俯卧撑"]];
+function fitCard(w){
+  if(!FIT_WEEKS.includes(w))return "";const f=FIT[w]||{};
+  return `<div class="wcard"><div><span style="font-size:20px">💪</span> <b>${w===3?"健身起点测试":"第 12 周再测起点动作"}</b> <span class="note">只存在这台手机</span></div><div class="q">每项做到力竭记个数。这些数字不会提交给 Claude，也不进任何仓库。</div><div class="fit0">${FIT_ITEMS.map(([k,n])=>`<label>${n}<input type="number" id="fit0-${w}-${k}" min="0" max="999" inputmode="numeric" value="${f[k]??""}" ${canWrite?"":"disabled"}></label>`).join("")}</div>${w===12&&FIT[3]?`<div class="note">第 3 周起点：${FIT_ITEMS.map(([k,n])=>n+" "+(FIT[3][k]??"—")).join("，")}</div>`:""}</div>`;
+}
+/* ---------- 临时任务：不给金币、不算全勤；需要验收的走提交验收，编号 t_<id> ---------- */
+const URG={hi:"紧急",mid:"一般",lo:"不急"};
+const tmpDone=(id,T)=>T.type==="v"?!!VT[id]:T.type==="t"?(Number(T.val)||0)>=(Number(T.goal)||1):!!T.done;
+function dueInfo(T,isDone){
+  if(!T.due)return {txt:"没有截止日期",cls:"",lvl:0};
+  const n=diffDays(todayStr(),T.due);
+  if(isDone)return {txt:"截止 "+T.due.slice(5).replace("-","/"),cls:"",lvl:0};
+  if(n<0)return {txt:`已过期 ${-n} 天`,cls:"over",lvl:2};
+  if(n===0)return {txt:"今天到期",cls:"soon",lvl:1};
+  if(n<=2)return {txt:`还剩 ${n} 天`,cls:"soon",lvl:1};
+  return {txt:`还剩 ${n} 天（${T.due.slice(5).replace("-","/")}）`,cls:"",lvl:0};
+}
+function renderTmp(){
+  const ids=Object.keys(TMP), rank={hi:0,mid:1,lo:2};
+  const open=ids.filter(id=>!tmpDone(id,TMP[id])).sort((a,b)=>(TMP[a].due||"9999").localeCompare(TMP[b].due||"9999")||rank[TMP[a].urg]-rank[TMP[b].urg]);
+  const fin=ids.filter(id=>tmpDone(id,TMP[id])).sort((a,b)=>(TMP[b].at||0)-(TMP[a].at||0));
+  const card=id=>{const T=TMP[id],ok=tmpDone(id,T),di=dueInfo(T,ok),dis=canWrite?"":"disabled";
+    let ctl;
+    if(T.type==="v")ctl=subBlock("t_"+id,ok,"tmp",id,0,T.name,T.desc||"");
+    else if(T.type==="t")ctl=`<div class="timer"><input id="tmpv-${id}" type="number" min="0" max="100000" inputmode="numeric" value="${T.val||""}" placeholder="0" aria-label="${esc(T.name)}" class="wide ${ok?"met":""}" ${dis}><span>/ ${esc(T.goal)} ${esc(T.unit||"")}</span></div>`;
+    else ctl=`<button data-tc="${id}" class="${ok?"on":""}" ${dis}>${ok?"已完成 ✓":"完成"}</button>`;
+    return `<div class="wcard"><div><b>${esc(T.name)}</b><span class="tag ${T.urg}">${URG[T.urg]||"一般"}</span><span class="tag ${T.type}">${{c:"打卡",t:"计数",v:"验收"}[T.type]}</span></div><div class="due ${di.cls}">⏰ ${di.txt}</div>${T.desc?`<div class="q">${esc(T.desc)}</div>`:""}${ctl}<button class="ghost" data-tdel="${id}" ${dis}>删除</button></div>`};
+  const lv=open.map(id=>dueInfo(TMP[id],false).lvl), over=lv.filter(x=>x===2).length, soon=lv.filter(x=>x===1).length;
+  document.getElementById("tmpWarn").innerHTML=over||soon?`<div class="tmpwarn">${over?`⚠️ ${over} 个已过期`:""}${over&&soon?"，":""}${soon?`⏰ ${soon} 个快到期（2 天内）`:""}</div>`:"";
+  document.getElementById("tmpList").innerHTML=(open.length?open.map(card).join(""):`<div class="note">暂时没有临时任务。</div>`)+(fin.length?`<details><summary>已完成 ${fin.length} 个</summary><div class="tmplist">${fin.map(card).join("")}</div></details>`:"");
+}
+document.getElementById("tType").addEventListener("change",ev=>{document.getElementById("tGoalRow").hidden=ev.target.value!=="t"});
+
 function render(){
   const c=compute();
+  renderTmp();
   document.getElementById("coins").textContent=c.coins;
   document.getElementById("xp").textContent=c.xp;
   document.getElementById("streak").textContent=c.streak;
@@ -879,7 +971,7 @@ function render(){
   const e=S.log[viewDate]||{};
   const old=viewDate<REV;
   const engN=engDaysInWeek(viewDate,null);
-  document.getElementById("tasks").innerHTML=(old?`<div class="note" style="padding:8px 0">这一天在修订前，按旧规则的 7 项结算，仍可在补打卡期限内补记。</div>`:"")+rulesFor(viewDate).map(t=>{
+  document.getElementById("tasks").innerHTML=(old?`<div class="note" style="padding:8px 0">这一天在修订前，按旧规则的 7 项结算，仍可在补打卡期限内补记。</div>`:viewDate<REV2?`<div class="note" style="padding:8px 0">这一天在计划 v3.1 之前，按当时的 5 项结算。</div>`:"")+rulesFor(viewDate).map(t=>{
     const ok=done(t,e,viewDate);
     const dis=(locked||!canWrite)?"disabled":"";
     const sd=subOf("d_"+viewDate);
@@ -902,24 +994,23 @@ function render(){
   document.getElementById("dbar").style.width=(req.length?Math.round(n/req.length*100):0)+"%";
   document.getElementById("dcount").textContent=`${n} / ${req.length} 已完成`;
   cb.className="combo"+(n===req.length&&!lv?"":" off");
-  cb.textContent=lv?"🛌 这天请假：不算全勤，也不打断连击":n===req.length?"🎯 全勤达成！额外 +15 金币":`应做 ${req.length} 项，已完成 ${n} 项；主技术块验收后才算全勤`;
+  cb.textContent=lv?"🛌 这天请假：不算全勤，也不打断连击":n===req.length?"🎯 全勤达成！额外 +15 金币":`应做 ${req.length} 项，已完成 ${n} 项；今日主任务验收后才算全勤`;
   const lb=document.getElementById("leave");lb.textContent=lv?"取消请假":"这天请假";lb.disabled=locked||!canWrite;
 
   // weekly
   const w=Math.min(Math.max(wk,1),12), we=S.weekly[w]||{};
   document.getElementById("wklabel").textContent=`第 ${w} 周 · ${W.t}（${W.d}）${W.boss?" · ⚔️ Boss 周，两关奖励翻倍，两关都过才算打败 Boss":""}${W.hol?" · 🎄 "+W.hol:""}`;
-  const SRC={quest:CC, git:GIT, m_gpt:GPT, m_gem:GEM, m_grok:GROK};
-  const desc={pub:W.v, review:"六行：做得好的 / 卡住的 / 下周改什么 / 如何更改 / 本周实际花了多少小时 / 三个模型谁做得好、谁出过错"+(W.boss?"。Boss 周加一问：这件作品值不值得做成一期视频或小产品":"")+(W.rq?"。本周复盘还要单独讨论："+W.rq.map((x,i)=>(i+1)+"）"+x).join(" "):"")};
-  document.getElementById("weekly").innerHTML=WEEKLY.map(t=>{
+  const desc={pub:W.v, swim:"本周游泳累计 ≥2500 米，并且去健身房 ≥2 次，两项都做到再点完成", review:"六行：做得好的 / 卡住的 / 下周改什么 / 如何更改 / 本周实际花了多少小时 / 三个模型谁做得好、谁出过错"+(W.boss?"。Boss 周加一问：这件作品值不值得做成一期视频或小产品":"")+(W.rq?"。本周复盘还要单独讨论："+W.rq.map((x,i)=>(i+1)+"）"+x).join(" "):"")};
+  document.getElementById("weekly").innerHTML=weeklyFor(w).map(t=>{
     const coin=t.boss&&W.boss?t.coin*2:t.coin;
-    const head=`<div><span style="font-size:20px">${t.ico}</span> <b>${t.name}</b> <span class="note">+${coin} 🪙</span></div>`;
-    if(SRC[t.id]){
-      const T=SRC[t.id][w-1], v=claudeOK(t.id,w);
+    const head=`<div><span style="font-size:20px">${t.ico}</span> <b>${t.name}${t.id==="m_ai"&&W.lead?" · 主角 "+esc(W.lead):""}</b> <span class="note">+${coin} 🪙</span>${t.id==="content"||t.id==="git"?` <span class="tag v">必做</span>`:""}</div>`;
+    if(srcOf(t.id)){
+      const T=srcOf(t.id)[w-1], v=claudeOK(t.id,w);if(!T)return "";
       return `<div class="wcard">${head}${taskBox(T,coin)}${subBlock("w"+w+"_"+t.id,!!v,"week",t.id,w,T.t,T.p)}</div>`;
     }
     const on=!!we[t.id];
     return `<div class="wcard ${t.opt?"opt":""}">${head}<div class="q">${esc(desc[t.id])}</div><button data-w="${t.id}" class="${on?"on":""}" ${canWrite?"":"disabled"}>${on?"已完成 ✓":"完成"}</button></div>`;
-  }).join("")+extraCards(w);
+  }).join("")+fitCard(w)+extraCards(w);
   document.getElementById("prodBox").innerHTML=prodCards(w);
   document.getElementById("extraBox").innerHTML=PRODUCT.length?prodBanner(w):extraBanner(w);
 
@@ -951,7 +1042,7 @@ function render(){
   const curW=weekOf(today);
   document.getElementById("goCurrentWeek").disabled=curW<1||curW>12;
   document.getElementById("map").innerHTML=WEEKS.map((x,i)=>{
-    const n=i+1, req=WEEKLY.filter(t=>!t.opt), cnt=req.filter(t=>weeklyOK(t,n)).length;
+    const n=i+1, req=weeklyFor(n).filter(t=>!t.opt), cnt=req.filter(t=>weeklyOK(t,n)).length;
     const complete=cnt===req.length;
     const status=complete?`已完成 · ${cnt}/${req.length}`:n<curW?`已结束 · 完成 ${cnt}/${req.length}`:n===curW?`当前周 · 完成 ${cnt}/${req.length}`:`后续周 · 完成 ${cnt}/${req.length}`;
     return `<details class="week ${n===curW?"now":""} ${n<curW?"past":""} ${complete?"completed":""}" data-map-week="${n}" ${n===curW?"open":""}><summary>
@@ -959,15 +1050,15 @@ function render(){
     <span class="week-status">${status}</span><span class="note">${esc(x.d)}</span>
     <span class="week-deliver">📦 ${esc(x.del)}</span></summary><div class="week-body">
     ${x.hol?`<div class="hol">🎄 ${esc(x.hol)}</div>`:""}
+    ${CONTENT[i]?`<div class="row"><span>🎬</span><span>${esc(CONTENT[i].t)}</span></div>`:""}
     <div class="row"><span>🗝️</span><span class="${x.boss?"boss":""}">${esc(CC[i].t)}</span></div>
     <div class="row"><span>🐙</span><span class="${x.boss?"boss":""}">${esc(GIT[i].t)}</span></div>
-    <div class="row"><span>🤖</span><span>${esc(GPT[i].t)}</span></div>
-    <div class="row"><span>✨</span><span>${esc(GEM[i].t)}</span></div>
-    <div class="row"><span>⚡</span><span>${esc(GROK[i].t)}</span></div>
-    <div class="row"><span>🎬</span><span>${esc(x.v)}</span></div>
+    ${AI[i]?`<div class="row"><span>🤖</span><span>${esc(AI[i].t)}</span></div>`:[[GPT,"🤖"],[GEM,"✨"],[GROK,"⚡"]].map(([A,ic])=>A[i]?`<div class="row"><span>${ic}</span><span>${esc(A[i].t)}</span></div>`:"").join("")}
+    ${PROD_W[i]?`<div class="row"><span>📦</span><span>${esc(PROD_W[i].t)}</span></div>`:""}
+    ${CONTENT[i]?"":`<div class="row"><span>🎬</span><span>${esc(x.v)}</span></div>`}
     <div class="row"><span>🗣️</span><span>${esc(x.e)}</span></div>
     ${(S.extra[n]||[]).map(id=>`<div class="row"><span>🚀</span><span>拓展 ${id}：${esc(extraOf(id)?.t||"")}${VE[id]?" ✓":""}</span></div>`).join("")}
-    <details class="steps"><summary>每日主技术块（周一到周日）</summary><ol>${DAYS[i].map(D=>`<li>${esc(D.t)}</li>`).join("")}</ol></details></div></details>`;
+    <details class="steps"><summary>每日今日主任务（周一到周日）</summary><ol>${DAYS[i].map(D=>`<li>${esc(D.t)}</li>`).join("")}</ol></details></div></details>`;
   }).join("");
 }
 
@@ -1013,6 +1104,14 @@ document.addEventListener("click",ev=>{
   if(b.dataset.xno){const w=+b.dataset.xno;mutate(()=>{(WK[w]||(WK[w]={})).no=true},null);return}
   if(b.dataset.mv){const id=b.dataset.mv,x=EX[id];if(!x||VE[id]||x.week>=12)return;const to=x.week+1;
     mutate(()=>{EX[id]={week:to,at:x.at||Date.now(),movedFrom:x.week}},`${id} 已顺延到第 ${to} 周`);return}
+  if(b.id==="tAddBtn"){const g=id=>document.getElementById(id);const name=g("tName").value.trim().slice(0,40);if(!name){toast("先填任务名称");return}
+    const type=g("tType").value, goal=Math.max(1,Math.min(100000,parseInt(g("tGoal").value,10)||0));
+    if(type==="t"&&!parseInt(g("tGoal").value,10)){toast("计数或计时类要填目标数");return}
+    const id=Date.now().toString(36);
+    mutate(()=>{TMP[id]={name,desc:g("tDesc").value.trim().slice(0,300),type,urg:g("tUrg").value,due:g("tDue").value||"",at:Date.now(),...(type==="t"?{goal,unit:g("tUnit").value.trim().slice(0,8),val:0}:{})}},"已添加临时任务");
+    for(const k of ["tName","tDesc","tGoal","tUnit","tDue"])g(k).value="";g("tmpAdd").open=false;return}
+  if(b.dataset.tc){const id=b.dataset.tc;if(!TMP[id])return;mutate(()=>{TMP[id].done=!TMP[id].done},TMP[id].done?null:"临时任务完成 ✓");return}
+  if(b.dataset.tdel){const id=b.dataset.tdel;if(!TMP[id]||!window.confirm(`删除临时任务「${TMP[id].name}」？`))return;mutate(()=>{delete TMP[id];delete SUB["t_"+id]},"已删除");return}
   if(b.dataset.real){const r=b.dataset.real;mutate(()=>{const o=S.real[r]||(S.real[r]={});o.done=true;syncPro()},"已记为兑现，好好享受！");return}
   if(b.dataset.buy){const it=LOOKS.find(i=>i.id===b.dataset.buy);if(!it||S.owned.includes(it.id)||compute().coins<it.price)return;
     mutate(()=>{S.spent+=it.price;S.owned.push(it.id);S.look=it.id;syncPro()},`解锁新造型「${it.name}」`);return}
@@ -1022,6 +1121,10 @@ document.addEventListener("change",ev=>{
   const id=ev.target.id||"";
   const r=id.match(/^rt-(\w+)$/);
   if(r){const o=S.real[r[1]]||(S.real[r[1]]={});o.text=ev.target.value.slice(0,60);syncPro();saveLocal();toast("奖励已记下");return}
+  const f0=id.match(/^fit0-(\d+)-(\w+)$/);
+  if(f0){const v=ev.target.value===""?null:Math.max(0,Math.min(999,parseInt(ev.target.value,10)||0));const o=FIT[f0[1]]||(FIT[f0[1]]={});if(v===null)delete o[f0[2]];else o[f0[2]]=v;saveLocal();toast("起点已记在本机");return}
+  const tv=id.match(/^tmpv-(\w+)$/);
+  if(tv&&TMP[tv[1]]){const T=TMP[tv[1]];const v=Math.max(0,Math.min(100000,parseInt(ev.target.value,10)||0)),was=v>=0&&(Number(T.val)||0)>=T.goal;mutate(()=>{T.val=v},!was&&v>=T.goal?"临时任务达标 ✓":null);return}
   const m=id.match(/^in-(\w+)$/); if(!m||!planReady) return;
   const d=viewDate,t=rulesFor(d).find(x=>x.id===m[1]); const v=Math.max(0,Math.min(100000,parseInt(ev.target.value,10)||0));
   const was=done(t,LOG[d],d);
@@ -1039,17 +1142,17 @@ function buildExport(){
     days[d]={week:weekOf(d),rules:d<REV?"old":"new",tasks,fullAttendance:dayFull(d),leave:isLeave(d)}}
   const weeks={};
   for(let w=1;w<=12;w++){const e=S.weekly[w]||{}, o={};
-    for(const t of WEEKLY){o[t.id]=t.who==="claude"?{submitted:!!subOf("w"+w+"_"+t.id),verified:claudeOK(t.id,w)||null,done:!!claudeOK(t.id,w)}:{done:!!e[t.id]}}
+    for(const t of weeklyFor(w)){o[t.id]=t.who==="claude"?{submitted:!!subOf("w"+w+"_"+t.id),verified:claudeOK(t.id,w)||null,done:!!claudeOK(t.id,w)}:{done:!!e[t.id]}}
     o.extra=(S.extra[w]||[]).map(id=>({id,title:extraOf(id)?.t||"",submitted:!!subOf("x_"+id),verified:VE[id]||null,done:!!VE[id]}));
     o.bossDefeated=!!(WEEKS[w-1].boss&&V[w]&&VG[w]);
     if(Object.values(o).some(v=>v&&(v.done||v.submitted||(Array.isArray(v)&&v.length))))weeks[w]=o}
   return {schema:"quest12-checkins/v1",exportedAt:new Date().toISOString(),timezone:"Asia/Shanghai",
     plan:{start:START,end:"2027-01-31",revisionDate:REV,version:PLAN_VERSION,
-      rules:{daily:DAILY.map(t=>({id:t.id,name:t.name,kind:{t:"count",c:"check",v:"verify"}[t.kind],goal:t.goal||null,coin:t.coin,stat:t.stat,how:t.meta})),
+      rules:{revision2Date:REV2,daily:DAILY.map(t=>({id:t.id,name:t.name,kind:{t:"count",c:"check",v:"verify"}[t.kind],goal:t.goal||null,coin:t.coin,stat:t.stat,how:t.meta})),
         weekly:WEEKLY.map(t=>({id:t.id,name:t.name,coin:t.coin,bossCoin:t.boss?t.coin*2:t.coin,stat:t.stat,verify:t.who==="claude",optional:!!t.opt})),
         fullAttendanceBonus:15,streak7Bonus:60,extraCoin:EXTRA_COIN,levels:LEVELS,titles:TITLES,bossWeeks:[4,8,12]},
       weeks:WEEKS.map((w,i)=>({week:i+1,title:w.t,dates:w.d,boss:!!w.boss,holiday:w.hol||null,deliver:w.del,video:w.v,english:w.e,
-        cc:CC[i],git:GIT[i],gpt:GPT[i],gem:GEM[i],grok:GROK[i],days:DAYS[i].map((d,j)=>({weekday:j+1,task:d.t,how:d.s,proof:d.p||null}))})),
+        cc:CC[i],git:GIT[i],gpt:GPT[i],gem:GEM[i],grok:GROK[i],content:CONTENT[i]||null,ai:AI[i]||null,product:PROD_W[i]||null,lead:w.lead||null,days:DAYS[i].map((d,j)=>({weekday:j+1,task:d.t,how:d.s,proof:d.p||null}))})),
       extraPool:EXTRA, skills:null, works:null, changelog:null},
     totals:{coins:c.coins,xp:c.xp,spent:S.spent,level:c.lv,title:TITLES[c.lv-1],streak:c.streak,maxStreak:c.maxRun,stats:c.stats,cards:c.cards,bossWeeks:c.bossW},
     wardrobe:{owned:S.owned,current:S.look},days,weeks};
@@ -1059,14 +1162,14 @@ function download(name,obj){
   a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1000);
 }
 document.getElementById("exportBtn").addEventListener("click",()=>{if(!planReady)return;download("quest12-checkins.json",buildExport());toast("已导出 quest12-checkins.json，发给 Grok 版导入")});
-document.getElementById("backupBtn").addEventListener("click",()=>{download("冒险岛备份-"+todayStr()+".json",{schema:"quest-island-backup/v1",exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR});toast("已导出备份文件，换手机时导入它")});
+document.getElementById("backupBtn").addEventListener("click",()=>{download("冒险岛备份-"+todayStr()+".json",{schema:"quest-island-backup/v1",exportedAt:new Date().toISOString(),log:LOG,wk:WK,ex:EX,sub:SUB,pro:PRO,pr:PR,tmp:TMP,fit:FIT});toast("已导出备份文件，换手机时导入它")});
 document.getElementById("restoreFile").addEventListener("change",ev=>{
   const f=ev.target.files[0];ev.target.value="";if(!f)return;
   f.text().then(t=>{let d;try{d=JSON.parse(t)}catch(e){toast("文件读不出来，不是备份文件");return}
     if(!d||d.schema!=="quest-island-backup/v1"){toast("这不是冒险岛备份文件");return}
     const n=Object.keys(LOG).length;
     if(n&&!confirmRestore(n))return;
-    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{};repairDup();ensureP1();saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
+    LOG=d.log||{};WK=d.wk||{};EX=d.ex||{};SUB=d.sub||{};PRO=d.pro||{};PR=d.pr||{};TMP=d.tmp||{};FIT=d.fit||{};repairDup();ensureP1();saveLocal();derive();render();toast("备份已导入，金币 "+compute().coins);
   });
 });
 function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 天的打卡，导入备份会整体替换它们。确定吗？`)}
@@ -1075,7 +1178,7 @@ function confirmRestore(n){return window.confirm(`这台设备上已经有 ${n} 
 function loading(msg){document.getElementById("tasks").innerHTML=`<div class="note" style="padding:12px 0">${esc(msg)}</div>`}
 async function getJSON(url){const r=await fetch(url+"?t="+Date.now(),{cache:"no-store"});if(!r.ok)throw new Error(r.status);const d=await r.json();if(r.headers.get("x-quest-stale"))Object.defineProperty(d,"__stale",{value:true});return d}
 async function fetchPlan(){
-  try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);PRODUCT=P.PRODUCT||[];PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
+  try{const P=await getJSON("plan.json");({WEEKS,CC,GIT,GPT,GEM,GROK,DAYS,EXTRA}=P);CONTENT=P.CONTENT||[];AI=P.AI||[];PROD_W=P.PROD||[];PRODUCT=P.PRODUCT||[];PLAN_VERSION=P.version||"";planReady=WEEKS.length===12;
     document.getElementById("planver").textContent=PLAN_VERSION?" · 计划 "+PLAN_VERSION:"";}
   catch(e){planReady=false;loading("计划读不出来。联网后刷新一次就会存进手机，之后断网也能打开。")}
 }
