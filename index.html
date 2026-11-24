@@ -275,6 +275,7 @@ body{padding-bottom:calc(84px + env(safe-area-inset-bottom,0px))}
 .tag.hi{background:var(--danger-soft);color:var(--danger)} .tag.mid{background:var(--brand-soft);color:var(--brand-strong)} .tag.lo{background:var(--bg);color:var(--muted)}
 .due{font-size:12px;color:var(--muted)} .due.soon{color:var(--gold-ink);font-weight:600} .due.over{color:var(--danger);font-weight:600}
 .fit0{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fittbl{margin-top:10px;overflow-x:auto}.fittbl table{width:100%;border-collapse:collapse;font-size:12px}.fittbl th,.fittbl td{padding:4px 3px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}.fittbl th{color:var(--muted);font-weight:500}.fittbl td:first-child{text-align:left}.spark{width:64px;height:18px;color:var(--brand);vertical-align:middle}
 .fit0 label{font-size:12px;color:var(--muted);display:grid;gap:3px;min-width:0}
 .ov-box.fm{max-width:420px;text-align:left;padding:16px}
 .ov-box.fm .t{font-size:20px;margin:0 0 6px}
@@ -530,7 +531,7 @@ summary{cursor:pointer;min-width:44px;min-height:44px;align-content:center}
       <div><b>🎄 节日周</b>第 7、8 周跨圣诞和元旦，任务可以做短，但视频不断更，截止仍是当周最后一天。</div>
       <div><b>🧱 卡关怎么办</b>一个问题卡了 60 分钟就停手，把报错截图发给 Claude，不硬耗。BOSS 卡住可以顺延一周，但视频不能停；进度落后时先放拓展任务，内容关、GitHub 关和每日今日主任务不放。</div>
       <div><b>📌 临时任务</b>在「今天」页最下面随时添加：填名称和说明、类型（自己打卡 / 计数或计时 / 需要 Claude 验收）、紧急度和截止日期，快到期（2 天内）和过期会提醒。临时任务不给金币，也不算全勤；需要验收的照常点「提交验收」。</div>
-      <div><b>💪 起点测试</b>第 3 周和第 12 周测引体向上、双杠臂屈伸、俯卧撑个数，只存在这台手机（会进备份文件），不提交给 Claude，不进任何仓库。</div>
+      <div><b>💪 每周身体数据</b>第 3 周起，周复盘里选填 6 项：腰围（cm）、体重（kg）、体脂率（%）、单组最大双杠臂屈伸、引体向上、俯卧撑个数；第 3 周这次就是起点测试。页面显示起点、上次、本周、比起点的变化和趋势线。只存在这台手机（会进备份文件），不提交给 Claude，不进任何仓库，也不进给 Grok 的导出文件。</div>
       <div><b>🔙 补打卡</b>只能补记前两天，再往前就锁定。</div>
       <div><b>🖱️ 铁律：GitHub 操作优先用 GitHub Desktop</b>所有涉及 GitHub 的操作（建仓库、克隆、提交、推送、拉取、分支、发 Pull Request）一律先给 GitHub Desktop 的点按钮做法；Desktop 做不到的（如 Pages、Issues、Actions、Release、仓库设置）才用网页，不要求你敲 Git 命令。Claude Code 自己会运行 Git 命令，你只需看懂并批准。这条适用于以后每一个 12 周计划。</div>
     </div>
@@ -906,11 +907,33 @@ function extraBanner(w){
   return `<div class="xbar strong">🎉 本周核心关卡已完成${mine.length?`，拓展任务也做完了 ${mine.length} 个`:""}！要再加一个本周任务吗？<br><span class="note">下一个：${n.id}「${esc(n.t)}」· ${esc(n.area)} · +${EXTRA_COIN} 🪙</span><span class="xrow"><button class="xbtn yes" data-xadd="${n.id}">是，加一个</button><button class="xbtn" data-xno="${w}">暂不</button></span></div>`;
 }
 
-/* ---------- 起点测试（只存这台设备，不进验收清单和任何仓库） ---------- */
-const FIT_WEEKS=[3,12], FIT_ITEMS=[["pull","引体向上"],["dip","双杠臂屈伸"],["push","俯卧撑"]];
+/* ---------- 每周身体数据（周复盘的一部分，选填；只存这台设备，不进验收清单、导出文件和任何仓库） ----------
+   FIT[周] = {waist 腰围cm, weight 体重kg, fat 体脂率%, dip 双杠臂屈伸, pull 引体向上, push 俯卧撑}；第 3 周即起点测试 */
+const FIT_FROM=3;
+const FIT_ITEMS=[["waist","腰围","cm",1,40,200],["weight","体重","kg",1,30,250],["fat","体脂率","%",1,3,70],["dip","双杠臂屈伸","个",0,0,999],["pull","引体向上","个",0,0,999],["push","俯卧撑","个",0,0,999]];
+const fitFmt=(v,dec)=>v==null?"—":dec?(+v).toFixed(1):String(v);
+function fitSpark(vals){
+  const pts=vals.map((v,i)=>[i,v]).filter(p=>p[1]!=null);if(pts.length<2)return "";
+  const ys=pts.map(p=>p[1]),lo=Math.min(...ys),hi=Math.max(...ys),n=vals.length-1||1;
+  const X=i=>2+i/n*76,Y=v=>hi===lo?11:20-(v-lo)/(hi-lo)*18;
+  return `<svg class="spark" viewBox="0 0 80 22" aria-hidden="true"><polyline fill="none" stroke="currentColor" stroke-width="1.6" points="${pts.map(p=>X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)).join(" ")}"/></svg>`;
+}
+function fitTable(w){
+  const weeks=[];for(let k=FIT_FROM;k<=w;k++)weeks.push(k);
+  const rows=FIT_ITEMS.map(([k,n,u,dec])=>{
+    const vals=weeks.map(x=>FIT[x]&&FIT[x][k]!=null?FIT[x][k]:null);
+    const base=vals.find(v=>v!=null), prevs=vals.slice(0,-1).filter(v=>v!=null), prev=prevs.length?prevs[prevs.length-1]:null, cur=vals[vals.length-1];
+    const d=(cur!=null&&base!=null&&w>FIT_FROM)?cur-base:null;
+    return `<tr><td>${n}</td><td>${fitFmt(base,dec)}</td><td>${fitFmt(prev,dec)}</td><td><b>${fitFmt(cur,dec)}</b></td><td>${d==null?"":(d>0?"+":"")+(dec?d.toFixed(1):d)}</td><td>${fitSpark(vals)}</td></tr>`}).join("");
+  const any=weeks.some(x=>FIT[x]&&Object.keys(FIT[x]).length);
+  return any?`<table><thead><tr><th></th><th>起点</th><th>上次</th><th>本周</th><th>比起点</th><th>趋势</th></tr></thead><tbody>${rows}</tbody></table>`:"";
+}
 function fitCard(w){
-  if(!FIT_WEEKS.includes(w))return "";const f=FIT[w]||{};
-  return `<div class="wcard"><div><span style="font-size:20px">💪</span> <b>${w===3?"健身起点测试":"第 12 周再测起点动作"}</b> <span class="note">只存在这台手机</span></div><div class="q">每项做到力竭记个数。这些数字不会提交给 Claude，也不进任何仓库。</div><div class="fit0">${FIT_ITEMS.map(([k,n])=>`<label>${n}<input type="number" id="fit0-${w}-${k}" min="0" max="999" inputmode="numeric" value="${f[k]??""}" ${canWrite?"":"disabled"}></label>`).join("")}</div>${w===12&&FIT[3]?`<div class="note">第 3 周起点：${FIT_ITEMS.map(([k,n])=>n+" "+(FIT[3][k]??"—")).join("，")}</div>`:""}</div>`;
+  if(w<FIT_FROM)return "";const f=FIT[w]||{};
+  return `<div class="wcard"><div><span style="font-size:20px">💪</span> <b>周复盘 · 本周身体数据${w===FIT_FROM?"（起点测试）":""}</b> <span class="note">选填 · 只存在这台手机</span></div>
+<div class="q">建议每周日早上起床、上完厕所、早饭前量腰围、体重、体脂率；三项力量在状态好、还没训练时测单组最大个数。没测就空着，不影响复盘算完成。这些数字不会提交给 Claude，也不进任何仓库和导出文件。</div>
+<div class="fit0">${FIT_ITEMS.map(([k,n,u,dec,mn,mx])=>`<label>${n}（${u}）<input type="number" id="fit0-${w}-${k}" min="${mn}" max="${mx}" step="${dec?"0.1":"1"}" inputmode="${dec?"decimal":"numeric"}" value="${f[k]??""}" ${canWrite?"":"disabled"}></label>`).join("")}</div>
+<div class="fittbl" id="fittbl">${fitTable(w)}</div></div>`;
 }
 /* ---------- 临时任务：不给金币、不算全勤；需要验收的走提交验收，编号 t_<id> ---------- */
 const URG={hi:"紧急",mid:"一般",lo:"不急"};
@@ -1122,7 +1145,12 @@ document.addEventListener("change",ev=>{
   const r=id.match(/^rt-(\w+)$/);
   if(r){const o=S.real[r[1]]||(S.real[r[1]]={});o.text=ev.target.value.slice(0,60);syncPro();saveLocal();toast("奖励已记下");return}
   const f0=id.match(/^fit0-(\d+)-(\w+)$/);
-  if(f0){const v=ev.target.value===""?null:Math.max(0,Math.min(999,parseInt(ev.target.value,10)||0));const o=FIT[f0[1]]||(FIT[f0[1]]={});if(v===null)delete o[f0[2]];else o[f0[2]]=v;saveLocal();toast("起点已记在本机");return}
+  if(f0){const it=FIT_ITEMS.find(x=>x[0]===f0[2]);if(!it)return;const[,,,dec,mn,mx]=it;const raw=ev.target.value.trim();
+    let v=raw===""?null:(dec?parseFloat(raw):parseInt(raw,10));
+    if(v!=null&&!isFinite(v)){toast("请填数字");return}
+    if(v!=null){v=Math.max(mn,Math.min(mx,v));if(dec)v=Math.round(v*10)/10;ev.target.value=v}
+    const o=FIT[f0[1]]||(FIT[f0[1]]={});if(v===null)delete o[f0[2]];else o[f0[2]]=v;if(!Object.keys(o).length)delete FIT[f0[1]];
+    saveLocal();const tb=document.getElementById("fittbl");if(tb)tb.innerHTML=fitTable(+f0[1]);toast("已记在本机");return}
   const tv=id.match(/^tmpv-(\w+)$/);
   if(tv&&TMP[tv[1]]){const T=TMP[tv[1]];const v=Math.max(0,Math.min(100000,parseInt(ev.target.value,10)||0)),was=v>=0&&(Number(T.val)||0)>=T.goal;mutate(()=>{T.val=v},!was&&v>=T.goal?"临时任务达标 ✓":null);return}
   const m=id.match(/^in-(\w+)$/); if(!m||!planReady) return;
